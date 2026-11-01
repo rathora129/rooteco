@@ -9,7 +9,7 @@ import HamperBanner from '@/components/home/HamperBanner';
 import WallOfLove from '@/components/home/WallOfLove';
 import OfficesSection from '@/components/home/OfficesSection';
 import { SwagIsAlways, CorporateMadeEasy, HomeFaq } from '@/components/home/EditorialSections';
-import { getFeatured, getBestSellers } from '@/data/products';
+import { getFeatured, getBestSellers, getNewArrivals } from '@/data/products';
 
 export default function HomePage() {
   return (
@@ -26,6 +26,14 @@ export default function HomePage() {
         cream
       />
       <FestivalGifting />
+      <ProductSection
+        eyebrow="New Arrivals"
+        title="Just landed for your team"
+        subtitle="Fresh additions to the catalogue — ready for branding and bulk orders."
+        products={getNewArrivals()}
+        viewAllLink="/products?sort=newest"
+        cream
+      />
       <ProductSection
         eyebrow="Best Seller"
         title="Our most-loved products"

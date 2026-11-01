@@ -322,6 +322,11 @@ const BuyRow = styled.div`
   gap: 12px;
   margin-top: 26px;
   flex-wrap: wrap;
+  @media (max-width: 560px) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
 `;
 
 const Qty = styled.div`
@@ -356,23 +361,38 @@ const AddBtn = styled(Button)`
   flex: 1;
   min-width: 180px;
   height: 48px;
+  @media (max-width: 560px) {
+    min-width: 0;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 `;
 
 const BuyNowBtn = styled(Button)`
   height: 48px;
   min-width: 140px;
+  @media (max-width: 560px) {
+    min-width: 112px;
+  }
 `;
 
 const QuoteLink = styled(Link)`
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 7px;
-  margin-top: 16px;
-  font-size: 14px;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  margin-top: 10px;
+  border-radius: ${theme.radius.pill};
+  border: 1.5px solid ${theme.colors.forest};
+  font-size: 14.5px;
   font-weight: 600;
   color: ${theme.colors.forest};
+  white-space: nowrap;
+  transition: all 0.25s ease;
   &:hover {
-    text-decoration: underline;
+    background: ${theme.colors.forest};
+    color: #fff;
   }
 `;
 
@@ -801,7 +821,7 @@ export default function ProductDetail({ product, related }) {
                 </BuyNowBtn>
               </BuyRow>
               <QuoteLink href={`/get-a-quote?product=${product.slug}`}>
-                <Quote size={15} /> Need 25+ units? Request bulk pricing
+                <Quote size={16} /> Get a Quote for bulk orders
               </QuoteLink>
 
               <Perks>

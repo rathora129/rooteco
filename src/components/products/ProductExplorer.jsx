@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { Gift, Search, SlidersHorizontal, X } from 'lucide-react';
 import categories from '@/data/categories';
 import { useStore } from '@/lib/store';
@@ -45,6 +45,18 @@ const Layout = styled.div`
   }
 `;
 
+const FilterOverlay = styled.button`
+  display: none;
+  @media (max-width: 900px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 290;
+    background: rgba(21, 34, 27, 0.45);
+    backdrop-filter: blur(3px);
+  }
+`;
+
 const Side = styled.aside`
   position: sticky;
   top: 96px;
@@ -53,8 +65,90 @@ const Side = styled.aside`
   border-radius: ${theme.radius.md};
   padding: 22px 20px;
   @media (max-width: 900px) {
-    position: static;
-    display: ${(p) => (p.$open ? 'block' : 'none')};
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    max-height: min(84vh, 660px);
+    overflow: hidden;
+    border-radius: 20px 20px 0 0;
+    border: none;
+    padding: 0;
+    box-shadow: 0 -22px 55px rgba(11, 61, 46, 0.22);
+    transform: translateY(105%);
+    visibility: hidden;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.3s;
+    ${(p) =>
+      p.$open &&
+      css`
+        transform: translateY(0);
+        visibility: visible;
+      `}
+  }
+`;
+
+const FilterBody = styled.div`
+  @media (max-width: 900px) {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 16px 20px;
+  }
+`;
+
+const DrawerHead = styled.div`
+  display: none;
+  @media (max-width: 900px) {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #fff;
+    border-bottom: 1px solid ${theme.colors.line};
+    border-radius: 20px 20px 0 0;
+    strong {
+      font-size: 17px;
+      color: ${theme.colors.forest};
+    }
+    button {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: ${theme.colors.ink};
+      &:hover {
+        background: ${theme.colors.cream};
+      }
+    }
+  }
+`;
+
+const DrawerApply = styled.div`
+  display: none;
+  @media (max-width: 900px) {
+    flex-shrink: 0;
+    display: block;
+    padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    border-top: 1px solid ${theme.colors.line};
+    box-shadow: 0 -8px 20px rgba(11, 61, 46, 0.06);
+    button {
+      width: 100%;
+      height: 46px;
+      border-radius: ${theme.radius.pill};
+      background: ${theme.colors.forest};
+      color: #fff;
+      font-size: 14.5px;
+      font-weight: 600;
+      &:hover {
+        background: ${theme.colors.green};
+      }
+    }
   }
 `;
 
@@ -322,6 +416,20 @@ export default function ProductExplorer({
     setVisible(12);
   }, [query, category, sub, sort, prices, tags, view]);
 
+  useEffect(() => {
+    if (!filtersOpen) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setFiltersOpen(false);
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [filtersOpen]);
+
   const isWishlist = view === 'wishlist';
 
   const base = useMemo(() => {
@@ -403,8 +511,31 @@ export default function ProductExplorer({
   const shown = filtered.slice(0, visible);
 
   return (
-    <Layout>
-      <Side $open={filtersOpen} aria-label="Product filters">
+    <>
+      {filtersOpen && (
+        <FilterOverlay
+          type="button"
+          aria-label="Close filters"
+          onClick={() => setFiltersOpen(false)}
+        />
+      )}
+      <Layout>
+        <Side
+          id="product-filters"
+          $open={filtersOpen}
+          aria-label="Product filters"
+        >
+          <DrawerHead>
+            <strong>Filters</strong>
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(false)}
+              aria-label="Close filters"
+            >
+              <X size={19} />
+            </button>
+          </DrawerHead>
+          <FilterBody>
         <FilterBlock>
           <h4>Search</h4>
           <Field>
@@ -479,9 +610,15 @@ export default function ProductExplorer({
             </Clear>
           </FilterBlock>
         )}
-      </Side>
+          </FilterBody>
+          <DrawerApply>
+            <button type="button" onClick={() => setFiltersOpen(false)}>
+              Show {filtered.length} {filtered.length === 1 ? 'gift' : 'gifts'}
+            </button>
+          </DrawerApply>
+        </Side>
 
-      <div>
+        <div>
         {isWishlist && (
           <ViewHead>
             <h2>Your Wishlist</h2>
@@ -495,7 +632,12 @@ export default function ProductExplorer({
             {query ? ` for “${query}”` : ''}
           </span>
           <div className="right">
-            <MobileFilterBtn onClick={() => setFiltersOpen((o) => !o)} type="button">
+            <MobileFilterBtn
+              onClick={() => setFiltersOpen((o) => !o)}
+              type="button"
+              aria-expanded={filtersOpen}
+              aria-controls="product-filters"
+            >
               <SlidersHorizontal size={16} /> Filters
               {activeCount > 0 ? ` (${activeCount})` : ''}
             </MobileFilterBtn>
@@ -567,7 +709,8 @@ export default function ProductExplorer({
             )}
           </>
         )}
-      </div>
-    </Layout>
+        </div>
+      </Layout>
+    </>
   );
 }

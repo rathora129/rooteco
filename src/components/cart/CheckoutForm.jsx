@@ -103,9 +103,7 @@ const Full = styled.div`
 `;
 
 const Label = styled.label`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: block;
   font-size: 12.5px;
   font-weight: 600;
   color: ${theme.colors.ink};
@@ -116,6 +114,8 @@ const Label = styled.label`
   input,
   select,
   textarea {
+    display: block;
+    margin-top: 6px;
     width: 100%;
     padding: 11px 14px;
     border-radius: ${theme.radius.sm};

@@ -167,6 +167,17 @@ const Bottom = styled.div`
     font-size: 13px;
     color: rgba(246, 241, 231, 0.6);
   }
+  /* Clearance for the fixed WhatsApp button. */
+  @media (min-width: 641px) {
+    .inner {
+      padding-right: 108px;
+    }
+  }
+  @media (max-width: 640px) {
+    .inner {
+      padding-bottom: 86px;
+    }
+  }
   .cats {
     display: flex;
     flex-wrap: wrap;

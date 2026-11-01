@@ -5,6 +5,7 @@ import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/cart/CartDrawer';
+import FloatingWhatsAppButton from '@/components/common/FloatingWhatsAppButton';
 import './globals.css';
 
 const display = Playfair_Display({
@@ -37,6 +38,7 @@ export default function RootLayout({ children }) {
             <main>{children}</main>
             <Footer />
             <CartDrawer />
+            <FloatingWhatsAppButton />
           </Providers>
         </StyledComponentsRegistry>
       </body>

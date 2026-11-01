@@ -85,7 +85,6 @@ const Nav = styled.nav`
 `;
 
 const NavItem = styled.div`
-  position: relative;
   > a,
   > button {
     display: inline-flex;
@@ -105,11 +104,12 @@ const NavItem = styled.div`
       color: ${theme.colors.forest};
       background: ${theme.colors.cream};
     }
+    svg {
+      transition: transform 0.2s ease;
+    }
   }
-  &:hover .mega-panel {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+  &.mega-open > a svg {
+    transform: rotate(180deg);
   }
 `;
 
@@ -232,7 +232,9 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [megaOpen, setMegaOpen] = useState(false);
   const closeTimer = useRef(null);
+  const suppressFocusOpen = useRef(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -241,7 +243,10 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => setMobileOpen(false), [pathname]);
+  useEffect(() => {
+    setMobileOpen(false);
+    setMegaOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : '';
@@ -250,20 +255,71 @@ export default function Navbar() {
     };
   }, [mobileOpen]);
 
-  const handleMegaLeave = () => {
-    closeTimer.current = setTimeout(() => {
-      document.querySelectorAll('.mega-panel').forEach((el) => {
-        el.style.opacity = '0';
-        el.style.visibility = 'hidden';
-      });
-    }, 150);
+  useEffect(() => {
+    if (!megaOpen) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key !== 'Escape') return;
+      suppressFocusOpen.current = true;
+      setMegaOpen(false);
+      document.querySelector('[data-mega-trigger]')?.focus();
+      window.setTimeout(() => {
+        suppressFocusOpen.current = false;
+      }, 0);
+    };
+    const onPointerDown = (event) => {
+      if (!document.querySelector('header')?.contains(event.target)) {
+        setMegaOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, [megaOpen]);
+
+  useEffect(
+    () => () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    },
+    []
+  );
+
+  const openMega = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setMegaOpen(true);
   };
 
-  const handleMegaEnter = () => {
+  const closeMega = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    document.querySelectorAll('.mega-panel').forEach((el) => {
-      el.style.opacity = '';
-      el.style.visibility = '';
+    setMegaOpen(false);
+  };
+
+  const scheduleMegaClose = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setMegaOpen(false), 250);
+  };
+
+  const onMegaClick = (event) => {
+    const isTouchWide =
+      typeof window !== 'undefined' &&
+      window.innerWidth > 1024 &&
+      window.matchMedia('(hover: none)').matches;
+    if (isTouchWide) {
+      event.preventDefault();
+      setMegaOpen((open) => !open);
+    } else {
+      closeMega();
+    }
+  };
+
+  const onMegaKeyDown = (event) => {
+    if (event.key !== 'ArrowDown') return;
+    event.preventDefault();
+    openMega();
+    window.requestAnimationFrame(() => {
+      document.querySelector('#mega-menu a')?.focus();
     });
   };
 
@@ -287,16 +343,41 @@ export default function Navbar() {
               item.mega ? (
                 <NavItem
                   key={item.href}
-                  onMouseEnter={handleMegaEnter}
-                  onMouseLeave={handleMegaLeave}
+                  className={megaOpen ? 'mega-open' : ''}
+                  onMouseEnter={openMega}
+                  onMouseLeave={scheduleMegaClose}
+                  onBlur={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget)) {
+                      scheduleMegaClose();
+                    }
+                  }}
                 >
                   <Link
                     href={item.href}
+                    data-mega-trigger
                     className={pathname === item.href ? 'active' : ''}
+                    aria-haspopup="true"
+                    aria-expanded={megaOpen}
+                    aria-controls="mega-menu"
+                    onFocus={() => {
+                      if (
+                        !suppressFocusOpen.current &&
+                        window.matchMedia('(hover: hover)').matches
+                      ) {
+                        openMega();
+                      }
+                    }}
+                    onClick={onMegaClick}
+                    onKeyDown={onMegaKeyDown}
                   >
                     {item.label} <ChevronDown size={15} />
                   </Link>
-                  <MegaMenu />
+                  <MegaMenu
+                    open={megaOpen}
+                    onClose={closeMega}
+                    onEnter={openMega}
+                    onLeave={scheduleMegaClose}
+                  />
                 </NavItem>
               ) : (
                 <NavItem key={item.href}>

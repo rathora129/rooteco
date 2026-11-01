@@ -8,7 +8,7 @@ export const heroBanners = [
     title: 'Thoughtful Gifts.\nMeaningful Connections.',
     subtitle:
       'Discover beautifully curated corporate gifts that bring people closer and make every occasion memorable.',
-    primaryCta: { label: 'Explore Gifts', link: '/products' },
+    primaryCta: { label: 'Shop Gifts', link: '/products' },
     secondaryCta: { label: 'Get a Quote', link: '/get-a-quote' },
     image: unsplash('photo-1549465220-1a8b9238cd48', 1920),
     accent: 'gold',

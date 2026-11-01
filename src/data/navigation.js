@@ -21,6 +21,16 @@ export const brand = {
   address: 'Demo Office — Gurugram, Haryana, India',
 };
 
+// WhatsApp click-to-chat configuration.
+// ACTION REQUIRED: no official RootEco WhatsApp number is available yet.
+// Replace the placeholder below with the real business number in international
+// format, digits only (country code + number, no '+', spaces or dashes),
+// e.g. '919876543210'. The placeholder reuses the demo phone number shown
+// elsewhere on this demo storefront — it is not a live WhatsApp line.
+export const WHATSAPP_NUMBER = '919000000000';
+export const WHATSAPP_MESSAGE =
+  'Hi RootEco, I am interested in your corporate gifting products. Please share more details.';
+
 export const mainNav = [
   { label: 'Home', href: '/' },
   { label: 'Categories', href: '/categories', mega: true },

@@ -12,9 +12,12 @@ import { Container } from '@/components/common/ui';
 
 const Hero = styled.section`
   position: relative;
-  height: clamp(520px, 78vh, 720px);
+  height: clamp(500px, 76vh, 700px);
   overflow: hidden;
   background: ${theme.colors.forest};
+  @media (max-width: 640px) {
+    height: clamp(430px, 66vh, 540px);
+  }
 `;
 
 const Slide = styled(motion.div)`
@@ -37,6 +40,19 @@ const Slide = styled(motion.div)`
         rgba(8, 43, 32, 0.18) 100%
       );
     }
+    @media (max-width: 768px) {
+      img {
+        object-position: 62% center;
+      }
+      &::after {
+        background: linear-gradient(
+          180deg,
+          rgba(8, 43, 32, 0.5) 0%,
+          rgba(8, 43, 32, 0.72) 42%,
+          rgba(8, 43, 32, 0.92) 100%
+        );
+      }
+    }
   }
 `;
 
@@ -49,6 +65,8 @@ const Content = styled(Container)`
   justify-content: center;
   color: #fff;
   max-width: ${theme.container};
+  padding-top: 24px;
+  padding-bottom: 92px;
   .kicker {
     display: inline-flex;
     align-items: center;
@@ -67,7 +85,7 @@ const Content = styled(Container)`
     }
   }
   h1 {
-    font-size: clamp(34px, 5.6vw, 68px);
+    font-size: clamp(34px, 5.6vw, 48px);
     max-width: 640px;
     white-space: pre-line;
     margin-bottom: 20px;
@@ -82,6 +100,24 @@ const Content = styled(Container)`
     display: flex;
     gap: 14px;
     flex-wrap: wrap;
+  }
+  @media (max-width: 640px) {
+    padding-top: 16px;
+    padding-bottom: 76px;
+    .kicker {
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: clamp(30px, 9vw, 40px);
+      margin-bottom: 14px;
+    }
+    p {
+      font-size: 14.5px;
+      margin-bottom: 24px;
+    }
+    .ctas {
+      gap: 10px;
+    }
   }
 `;
 
@@ -99,6 +135,10 @@ const GoldBtn = styled(Link)`
   &:hover {
     background: ${theme.colors.goldLight};
     transform: translateY(-2px);
+  }
+  @media (max-width: 640px) {
+    padding: 13px 20px;
+    font-size: 14px;
   }
 `;
 
@@ -118,6 +158,10 @@ const GhostBtn = styled(Link)`
     background: #fff;
     color: ${theme.colors.forest};
   }
+  @media (max-width: 640px) {
+    padding: 13px 20px;
+    font-size: 14px;
+  }
 `;
 
 const Controls = styled.div`
@@ -133,6 +177,13 @@ const Controls = styled.div`
     display: flex;
     align-items: center;
     gap: 20px;
+  }
+  @media (max-width: 640px) {
+    bottom: 16px;
+    .inner {
+      padding: 0 16px;
+      gap: 12px;
+    }
   }
 `;
 
@@ -164,10 +215,15 @@ const ArrowBtn = styled.button`
     background: #fff;
     color: ${theme.colors.forest};
   }
+  @media (max-width: 640px) {
+    width: 38px;
+    height: 38px;
+  }
 `;
 
 export default function HeroSlider() {
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
   const reduce = useReducedMotion();
 
   const go = useCallback(
@@ -176,15 +232,20 @@ export default function HeroSlider() {
   );
 
   useEffect(() => {
-    if (reduce) return undefined;
+    if (reduce || paused) return undefined;
     const t = setInterval(() => go(1), 6500);
     return () => clearInterval(t);
-  }, [go, reduce]);
+  }, [go, reduce, paused]);
 
   const banner = heroBanners[index];
 
   return (
-    <Hero aria-label="Featured collections">
+    <Hero
+      aria-label="Featured collections"
+      aria-roledescription="carousel"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
       <AnimatePresence mode="sync">
         <Slide
           key={banner.id}

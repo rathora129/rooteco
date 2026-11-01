@@ -200,7 +200,7 @@ const Empty = styled.div`
   color: ${theme.colors.muted};
   text-align: center;
   padding: 30px;
-  svg {
+  > svg {
     color: ${theme.colors.line};
     width: 52px;
     height: 52px;

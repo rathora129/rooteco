@@ -19,6 +19,8 @@ const Track = styled.div`
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   padding: 6px 2px 18px;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
   &::-webkit-scrollbar {
     display: none;
   }
@@ -36,7 +38,8 @@ const Track = styled.div`
 
 const Arrow = styled.button`
   position: absolute;
-  top: 38%;
+  top: 30%;
+  transform: translateY(-50%);
   z-index: 3;
   width: 46px;
   height: 46px;
@@ -92,7 +95,7 @@ export default function ProductCarousel({ products }) {
   };
 
   return (
-    <Wrap>
+    <Wrap role="region" aria-label="Product carousel">
       {canPrev && (
         <Arrow className="prev" onClick={() => scrollBy(-1)} aria-label="Previous products">
           <ChevronLeft size={20} />
@@ -103,7 +106,7 @@ export default function ProductCarousel({ products }) {
           <ChevronRight size={20} />
         </Arrow>
       )}
-      <Track ref={trackRef}>
+      <Track ref={trackRef} tabIndex={0} aria-label="Scrollable product list">
         {products.map((p) => (
           <ProductCard key={p.slug} product={p} />
         ))}

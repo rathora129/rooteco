@@ -11,6 +11,8 @@ import { Badge, Price } from './ui';
 
 const Card = styled.article`
   position: relative;
+  min-width: 0;
+  height: 100%;
   background: #fff;
   border: 1px solid ${theme.colors.line};
   border-radius: ${theme.radius.md};
@@ -30,6 +32,7 @@ const ImageWrap = styled(Link)`
   background: ${theme.colors.cream};
   overflow: hidden;
   display: block;
+  flex-shrink: 0;
   img {
     object-fit: cover;
     transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
@@ -69,14 +72,48 @@ const Body = styled.div`
   flex-direction: column;
   gap: 6px;
   flex: 1;
+  min-width: 0;
+  @media (max-width: 640px) {
+    padding: 12px;
+    gap: 5px;
+  }
+  @media (max-width: 360px) {
+    padding: 10px;
+  }
+  @media (max-width: 640px) {
+    ${Price} {
+      gap: 5px;
+      .now {
+        font-size: 15px;
+      }
+      .mrp {
+        font-size: 12px;
+      }
+      .off {
+        font-size: 11px;
+      }
+    }
+  }
+  @media (max-width: 420px) {
+    ${Price} {
+      row-gap: 0;
+      .off {
+        flex-basis: 100%;
+      }
+    }
+  }
 `;
 
 const Cat = styled.span`
+  display: block;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: ${theme.colors.green};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const Name = styled(Link)`
@@ -85,8 +122,17 @@ const Name = styled(Link)`
   font-weight: 600;
   color: ${theme.colors.ink};
   line-height: 1.3;
+  min-height: 2.6em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   &:hover {
     color: ${theme.colors.forest};
+  }
+  @media (max-width: 640px) {
+    font-size: 14.5px;
+    min-height: 2.6em;
   }
 `;
 
@@ -96,50 +142,91 @@ const Rating = styled.div`
   gap: 5px;
   font-size: 12.5px;
   color: ${theme.colors.muted};
+  white-space: nowrap;
   svg {
     color: ${theme.colors.gold};
     fill: ${theme.colors.gold};
     width: 13px;
     height: 13px;
+    flex-shrink: 0;
   }
 `;
 
 const Actions = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
+  align-items: stretch;
   margin-top: auto;
   padding-top: 12px;
 `;
 
 const AddBtn = styled.button`
-  flex: 1;
+  min-width: 0;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 11px 12px;
+  padding: 0 14px;
   border-radius: ${theme.radius.pill};
   background: ${theme.colors.forest};
   color: #fff;
   font-size: 13.5px;
   font-weight: 600;
-  transition: background 0.25s ease;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background 0.25s ease, transform 0.2s ease;
+  svg {
+    flex-shrink: 0;
+  }
   &:hover {
     background: ${theme.colors.green};
+  }
+  &:active {
+    transform: scale(0.98);
+  }
+  @media (max-width: 640px) {
+    height: 40px;
+    padding: 0 8px;
+    font-size: 12px;
+    gap: 5px;
+    svg {
+      display: none;
+    }
+  }
+  @media (max-width: 360px) {
+    padding: 0 6px;
+    font-size: 11.5px;
   }
 `;
 
 const QuoteBtn = styled(Link)`
-  padding: 11px 14px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
   border-radius: ${theme.radius.pill};
   border: 1.5px solid ${theme.colors.forest};
   color: ${theme.colors.forest};
   font-size: 13.5px;
   font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
   transition: all 0.25s ease;
   &:hover {
     background: ${theme.colors.forest};
     color: #fff;
+  }
+  @media (max-width: 640px) {
+    height: 40px;
+    padding: 0 9px;
+    font-size: 12px;
+  }
+  @media (max-width: 360px) {
+    padding: 0 6px;
+    font-size: 11.5px;
   }
 `;
 
@@ -167,6 +254,7 @@ export default function ProductCard({ product }) {
         className={wished ? 'active' : ''}
         onClick={() => toggleWishlist(product.slug)}
         aria-label={wished ? 'Remove from wishlist' : 'Add to wishlist'}
+        aria-pressed={wished}
       >
         <Heart size={17} />
       </WishBtn>

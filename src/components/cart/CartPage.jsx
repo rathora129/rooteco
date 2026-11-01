@@ -239,7 +239,7 @@ const Empty = styled.div`
   border: 1px dashed ${theme.colors.line};
   border-radius: ${theme.radius.lg};
   background: #fff;
-  svg {
+  > svg {
     color: ${theme.colors.green};
     margin-bottom: 12px;
   }

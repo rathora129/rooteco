@@ -140,20 +140,24 @@ export const Badge = styled.span`
 export const Price = styled.div`
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 2px 8px;
   .now {
     font-size: ${(p) => p.$size || '17px'};
     font-weight: 700;
     color: ${theme.colors.forest};
+    white-space: nowrap;
   }
   .mrp {
     font-size: 14px;
     color: ${theme.colors.muted};
     text-decoration: line-through;
+    white-space: nowrap;
   }
   .off {
     font-size: 12px;
     font-weight: 700;
     color: ${theme.colors.green};
+    white-space: nowrap;
   }
 `;
