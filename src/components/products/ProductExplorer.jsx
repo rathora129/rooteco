@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import styled, { css } from 'styled-components';
-import { Gift, Search, SlidersHorizontal, X } from 'lucide-react';
+import { Gift, LayoutGrid, List, Search, SlidersHorizontal, X } from 'lucide-react';
 import categories from '@/data/categories';
 import { useStore } from '@/lib/store';
 import theme from '@/styles/theme';
@@ -60,6 +60,19 @@ const FilterOverlay = styled.button`
 const Side = styled.aside`
   position: sticky;
   top: 96px;
+  max-height: calc(100vh - 120px);
+  max-height: calc(100dvh - 120px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: ${theme.colors.line} transparent;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: ${theme.colors.line};
+    border-radius: 999px;
+  }
   background: #fff;
   border: 1px solid ${theme.colors.line};
   border-radius: ${theme.radius.md};
@@ -252,9 +265,12 @@ const Toolbar = styled.div`
     .right {
       width: 100%;
       margin-left: 0;
+      display: grid;
+      grid-template-columns: auto auto minmax(0, 1fr);
+      gap: 8px;
     }
     .right > * {
-      flex: 1;
+      flex: initial;
     }
   }
 `;
@@ -268,6 +284,50 @@ const SortWrap = styled.div`
   ${Select} {
     width: auto;
     min-width: 178px;
+  }
+  @media (max-width: 640px) {
+    min-width: 0;
+    ${Select} {
+      width: 100%;
+      min-width: 0;
+      padding: 10px;
+      font-size: 13px;
+    }
+  }
+`;
+
+const ViewToggle = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid ${theme.colors.line};
+  border-radius: ${theme.radius.pill};
+  background: #fff;
+  flex-shrink: 0;
+  button {
+    width: 36px;
+    height: 32px;
+    border-radius: ${theme.radius.pill};
+    display: grid;
+    place-items: center;
+    color: ${theme.colors.muted};
+    transition: background 0.2s ease, color 0.2s ease;
+    &:hover {
+      background: ${theme.colors.cream};
+      color: ${theme.colors.forest};
+    }
+    &.active {
+      background: ${theme.colors.forest};
+      color: #fff;
+    }
+  }
+  @media (max-width: 640px) {
+    padding: 2px;
+    button {
+      width: 32px;
+      height: 32px;
+    }
   }
 `;
 
@@ -314,14 +374,20 @@ const Chips = styled.div`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 20px;
-  @media (max-width: 1180px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
   @media (max-width: 640px) {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
+  }
+`;
+
+const ListStack = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  @media (max-width: 640px) {
+    gap: 12px;
   }
 `;
 
@@ -403,6 +469,7 @@ export default function ProductExplorer({
   const [tags, setTags] = useState([]);
   const [visible, setVisible] = useState(12);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [layout, setLayout] = useState('grid');
 
   const paramString = searchParams.toString();
   useEffect(() => {
@@ -641,6 +708,28 @@ export default function ProductExplorer({
               <SlidersHorizontal size={16} /> Filters
               {activeCount > 0 ? ` (${activeCount})` : ''}
             </MobileFilterBtn>
+            <ViewToggle role="group" aria-label="Product view">
+              <button
+                type="button"
+                className={layout === 'grid' ? 'active' : ''}
+                onClick={() => setLayout('grid')}
+                aria-pressed={layout === 'grid'}
+                aria-label="Grid view"
+                title="Grid view"
+              >
+                <LayoutGrid size={16} />
+              </button>
+              <button
+                type="button"
+                className={layout === 'list' ? 'active' : ''}
+                onClick={() => setLayout('list')}
+                aria-pressed={layout === 'list'}
+                aria-label="List view"
+                title="List view"
+              >
+                <List size={17} />
+              </button>
+            </ViewToggle>
             <SortWrap>
               <span style={{ display: 'none' }}>Sort</span>
               <Select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort products">
@@ -695,11 +784,19 @@ export default function ProductExplorer({
           </Empty>
         ) : (
           <>
-            <Grid>
-              {shown.map((p) => (
-                <ProductCard key={p.slug} product={p} />
-              ))}
-            </Grid>
+            {layout === 'grid' ? (
+              <Grid>
+                {shown.map((p) => (
+                  <ProductCard key={p.slug} product={p} />
+                ))}
+              </Grid>
+            ) : (
+              <ListStack>
+                {shown.map((p) => (
+                  <ProductCard key={p.slug} product={p} layout="list" />
+                ))}
+              </ListStack>
+            )}
             {visible < filtered.length && (
               <More>
                 <Button onClick={() => setVisible((v) => v + 12)} $variant="outline">

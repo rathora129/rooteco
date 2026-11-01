@@ -405,7 +405,7 @@ const NoteField = styled.label`
 
 const Summary = styled.aside`
   position: sticky;
-  top: 96px;
+  top: 80px;
   background: #fff;
   border: 1px solid ${theme.colors.line};
   border-radius: ${theme.radius.lg};

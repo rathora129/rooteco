@@ -82,15 +82,24 @@ const Top = styled.div`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: 1.08fr 1fr;
-  gap: 56px;
+  grid-template-areas:
+    'gallery info'
+    'below info';
+  column-gap: 56px;
+  row-gap: 48px;
   align-items: start;
   @media (max-width: 960px) {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      'gallery'
+      'info'
+      'below';
     gap: 34px;
   }
 `;
 
 const Gallery = styled.div`
+  grid-area: gallery;
   display: grid;
   grid-template-columns: 84px 1fr;
   gap: 14px;
@@ -185,10 +194,29 @@ const Main = styled.div`
 `;
 
 const Info = styled.div`
+  grid-area: info;
   position: sticky;
   top: 96px;
+  align-self: start;
+  max-height: calc(100vh - 112px);
+  max-height: calc(100dvh - 112px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: ${theme.colors.line} transparent;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: ${theme.colors.line};
+    border-radius: 999px;
+  }
   @media (max-width: 960px) {
     position: static;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
   .type {
     display: inline-flex;
@@ -245,6 +273,7 @@ const RatingRow = styled.div`
 const Desc = styled.p`
   color: ${theme.colors.muted};
   font-size: 15.5px;
+  margin-top: 22px;
   padding-bottom: 22px;
   border-bottom: 1px solid ${theme.colors.line};
 `;
@@ -426,6 +455,13 @@ const Perks = styled.ul`
   }
 `;
 
+const Controls = styled.div`
+  @media (min-width: 961px) and (max-width: 1360px) {
+    /* keep the fixed WhatsApp button clear of the purchase controls */
+    padding-right: 74px;
+  }
+`;
+
 const Accordion = styled.div`
   margin-top: 8px;
 `;
@@ -520,18 +556,15 @@ const Bulk = styled.div`
 `;
 
 const Below = styled.div`
+  grid-area: below;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
+  grid-template-columns: 1fr;
+  gap: 34px;
   align-items: start;
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-    gap: 30px;
-  }
   h2 {
-    font-size: 28px;
+    font-size: 26px;
     color: ${theme.colors.forest};
-    margin-bottom: 18px;
+    margin-bottom: 16px;
   }
 `;
 
@@ -746,7 +779,6 @@ export default function ProductDetail({ product, related }) {
               <div style={{ fontSize: 12.5, color: theme.colors.muted, margin: '4px 0 18px' }}>
                 Inclusive of taxes · Bulk pricing available
               </div>
-              <Desc>{product.description}</Desc>
 
               {product.colors?.length > 0 && (
                 <Option>
@@ -812,112 +844,112 @@ export default function ProductDetail({ product, related }) {
                 </Qty>
               </Option>
 
-              <BuyRow>
-                <AddBtn onClick={() => addToCart(product, { color, variant, qty })}>
-                  <ShoppingBag size={17} /> Add to Cart
-                </AddBtn>
-                <BuyNowBtn $variant="gold" onClick={buyNow}>
-                  Buy Now
-                </BuyNowBtn>
-              </BuyRow>
-              <QuoteLink href={`/get-a-quote?product=${product.slug}`}>
-                <Quote size={16} /> Get a Quote for bulk orders
-              </QuoteLink>
+              <Controls>
+                <BuyRow>
+                  <AddBtn onClick={() => addToCart(product, { color, variant, qty })}>
+                    <ShoppingBag size={17} /> Add to Cart
+                  </AddBtn>
+                  <BuyNowBtn $variant="gold" onClick={buyNow}>
+                    Buy Now
+                  </BuyNowBtn>
+                </BuyRow>
+                <QuoteLink href={`/get-a-quote?product=${product.slug}`}>
+                  <Quote size={16} /> Get a Quote for bulk orders
+                </QuoteLink>
 
-              <Perks>
-                <li>
-                  <BadgeCheck size={17} />
-                  <span>
-                    <strong>Custom branding</strong>
-                    {product.customization[0]}
-                  </span>
-                </li>
-                <li>
-                  <Truck size={17} />
-                  <span>
-                    <strong>Pan-India delivery</strong>
-                    {leadTime || 'Timeline shared at quote'}
-                  </span>
-                </li>
-                <li>
-                  <Check size={17} />
-                  <span>
-                    <strong>Sample first</strong>
-                    Approve a mock-up before production
-                  </span>
-                </li>
-                <li>
-                  <Quote size={17} />
-                  <span>
-                    <strong>Dedicated support</strong>
-                    One contact from quote to delivery
-                  </span>
-                </li>
-              </Perks>
+                <Desc>{product.description}</Desc>
 
-              <Accordion>
-                {sections.map((s) => (
-                  <Item key={s.id} className={openSection === s.id ? 'open' : ''}>
-                    <button
-                      className="head"
-                      type="button"
-                      onClick={() => setOpenSection(openSection === s.id ? '' : s.id)}
-                      aria-expanded={openSection === s.id}
-                    >
-                      {s.label} <ChevronDown size={18} />
-                    </button>
-                    {openSection === s.id && <div className="body">{s.body}</div>}
-                  </Item>
-                ))}
-              </Accordion>
+                <Perks>
+                  <li>
+                    <BadgeCheck size={17} />
+                    <span>
+                      <strong>Custom branding</strong>
+                      {product.customization[0]}
+                    </span>
+                  </li>
+                  <li>
+                    <Truck size={17} />
+                    <span>
+                      <strong>Pan-India delivery</strong>
+                      {leadTime || 'Timeline shared at quote'}
+                    </span>
+                  </li>
+                  <li>
+                    <Check size={17} />
+                    <span>
+                      <strong>Sample first</strong>
+                      Approve a mock-up before production
+                    </span>
+                  </li>
+                  <li>
+                    <Quote size={17} />
+                    <span>
+                      <strong>Dedicated support</strong>
+                      One contact from quote to delivery
+                    </span>
+                  </li>
+                </Perks>
 
-              <Bulk>
-                <div>
-                  <h4>Ordering for a team or clients?</h4>
-                  <p>Get tiered pricing and a free branding mock-up.</p>
-                </div>
-                <Link href={`/get-a-quote?product=${product.slug}`}>Get a quote →</Link>
-              </Bulk>
+                <Accordion>
+                  {sections.map((s) => (
+                    <Item key={s.id} className={openSection === s.id ? 'open' : ''}>
+                      <button
+                        className="head"
+                        type="button"
+                        onClick={() => setOpenSection(openSection === s.id ? '' : s.id)}
+                        aria-expanded={openSection === s.id}
+                      >
+                        {s.label} <ChevronDown size={18} />
+                      </button>
+                      {openSection === s.id && <div className="body">{s.body}</div>}
+                    </Item>
+                  ))}
+                </Accordion>
+
+                <Bulk>
+                  <div>
+                    <h4>Ordering for a team or clients?</h4>
+                    <p>Get tiered pricing and a free branding mock-up.</p>
+                  </div>
+                  <Link href={`/get-a-quote?product=${product.slug}`}>Get a quote →</Link>
+                </Bulk>
+              </Controls>
             </Info>
-          </Grid>
-        </Container>
-      </Section>
 
-      <Section style={{ paddingTop: 0 }}>
-        <Container>
-          <Below>
-            <div>
-              <h2>Good to know</h2>
-              <FAQAccordion items={faqs.slice(0, 4)} defaultOpen={-1} />
-            </div>
-            <div>
-              <h2>Personalization at scale</h2>
-              <CheckList>
-                <li>
-                  <Check size={16} /> Share your logo (SVG/PNG) — we send a digital mock-up within
-                  24–48 hours.
-                </li>
-                <li>
-                  <Check size={16} /> Add individual names, messages or employee IDs at no extra
-                  design cost.
-                </li>
-                <li>
-                  <Check size={16} /> Choose from engraving, embroidery, UV print, deboss or foil.
-                </li>
-                <li>
-                  <Check size={16} /> Gift boxes, sleeves and ribbons can be fully customized.
-                </li>
-                <li>
-                  <Check size={16} /> Multi-address shipping with individual gift notes available.
-                </li>
-              </CheckList>
-              <div style={{ marginTop: 22 }}>
-                <ButtonLink href={`/get-a-quote?product=${product.slug}`} $variant="outline">
-                  Start a bulk enquiry
-                </ButtonLink>
+            <Below>
+              <div>
+                <h2>Good to know</h2>
+                <FAQAccordion items={faqs.slice(0, 4)} defaultOpen={-1} />
               </div>
-            </div>
-          </Below>
+              <div>
+                <h2>Personalization at scale</h2>
+                <CheckList>
+                  <li>
+                    <Check size={16} /> Share your logo (SVG/PNG) — we send a digital mock-up within
+                    24–48 hours.
+                  </li>
+                  <li>
+                    <Check size={16} /> Add individual names, messages or employee IDs at no extra
+                    design cost.
+                  </li>
+                  <li>
+                    <Check size={16} /> Choose from engraving, embroidery, UV print, deboss or foil.
+                  </li>
+                  <li>
+                    <Check size={16} /> Gift boxes, sleeves and ribbons can be fully customized.
+                  </li>
+                  <li>
+                    <Check size={16} /> Multi-address shipping with individual gift notes available.
+                  </li>
+                </CheckList>
+                <div style={{ marginTop: 22 }}>
+                  <ButtonLink href={`/get-a-quote?product=${product.slug}`} $variant="outline">
+                    Start a bulk enquiry
+                  </ButtonLink>
+                </div>
+              </div>
+            </Below>
+          </Grid>
         </Container>
       </Section>
 

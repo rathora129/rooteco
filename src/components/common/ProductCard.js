@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { formatINR } from '@/lib/utils';
@@ -24,6 +24,63 @@ const Card = styled.article`
     transform: translateY(-6px);
     box-shadow: ${theme.shadow.lift};
   }
+  @media (max-width: 360px) {
+    .badge {
+      top: 10px;
+      left: 10px;
+      padding: 4px 8px;
+      font-size: 10px;
+    }
+    .wish {
+      top: 8px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+    }
+  }
+  ${(p) =>
+    p.$layout === 'list' &&
+    css`
+      display: grid;
+      grid-template-columns: 232px minmax(0, 1fr);
+      align-items: stretch;
+      &:hover {
+        transform: none;
+        box-shadow: ${theme.shadow.lift};
+      }
+      @media (max-width: 1024px) {
+        grid-template-columns: 200px minmax(0, 1fr);
+      }
+      @media (max-width: 640px) {
+        grid-template-columns: 118px minmax(0, 1fr);
+        .badge {
+          top: 8px;
+          left: 8px;
+          padding: 4px 8px;
+          font-size: 9.5px;
+        }
+        .wish {
+          top: auto;
+          right: 8px;
+          bottom: 8px;
+          width: 30px;
+          height: 30px;
+        }
+      }
+      @media (max-width: 380px) {
+        grid-template-columns: 100px minmax(0, 1fr);
+      }
+    `}
+`;
+
+const Media = styled.div`
+  position: relative;
+  ${(p) =>
+    p.$layout === 'list' &&
+    css`
+      height: 100%;
+      min-height: 100%;
+    `}
 `;
 
 const ImageWrap = styled(Link)`
@@ -40,6 +97,13 @@ const ImageWrap = styled(Link)`
   ${Card}:hover & img {
     transform: scale(1.06);
   }
+  ${(p) =>
+    p.$layout === 'list' &&
+    css`
+      height: 100%;
+      min-height: 100%;
+      aspect-ratio: auto;
+    `}
 `;
 
 const WishBtn = styled.button`
@@ -102,6 +166,19 @@ const Body = styled.div`
       }
     }
   }
+  ${(p) =>
+    p.$layout === 'list' &&
+    css`
+      padding: 22px 24px;
+      gap: 7px;
+      @media (max-width: 1024px) {
+        padding: 18px 20px;
+      }
+      @media (max-width: 640px) {
+        padding: 12px;
+        gap: 5px;
+      }
+    `}
 `;
 
 const Cat = styled.span`
@@ -154,11 +231,25 @@ const Rating = styled.div`
 
 const Actions = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 65fr) minmax(0, 35fr);
   gap: 8px;
   align-items: stretch;
   margin-top: auto;
   padding-top: 12px;
+  ${(p) =>
+    p.$layout === 'list' &&
+    css`
+      width: 100%;
+      max-width: 360px;
+      padding-top: 14px;
+      @media (max-width: 640px) {
+        max-width: none;
+        padding-top: 10px;
+      }
+    `}
+  @media (max-width: 640px) {
+    gap: 7px;
+  }
 `;
 
 const AddBtn = styled.button`
@@ -167,15 +258,17 @@ const AddBtn = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 0 14px;
+  gap: 6px;
+  padding: 0 8px;
   border-radius: ${theme.radius.pill};
   background: ${theme.colors.forest};
   color: #fff;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: background 0.25s ease, transform 0.2s ease;
   svg {
     flex-shrink: 0;
@@ -188,7 +281,7 @@ const AddBtn = styled.button`
   }
   @media (max-width: 640px) {
     height: 40px;
-    padding: 0 8px;
+    padding: 0 6px;
     font-size: 12px;
     gap: 5px;
     svg {
@@ -196,24 +289,27 @@ const AddBtn = styled.button`
     }
   }
   @media (max-width: 360px) {
-    padding: 0 6px;
+    padding: 0 5px;
     font-size: 11.5px;
   }
 `;
 
 const QuoteBtn = styled(Link)`
+  min-width: 0;
   height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 14px;
+  padding: 0 8px;
   border-radius: ${theme.radius.pill};
   border: 1.5px solid ${theme.colors.forest};
   color: ${theme.colors.forest};
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: all 0.25s ease;
   &:hover {
     background: ${theme.colors.forest};
@@ -221,44 +317,58 @@ const QuoteBtn = styled(Link)`
   }
   @media (max-width: 640px) {
     height: 40px;
-    padding: 0 9px;
+    padding: 0 5px;
     font-size: 12px;
   }
   @media (max-width: 360px) {
-    padding: 0 6px;
+    padding: 0 4px;
     font-size: 11.5px;
   }
 `;
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, layout = 'grid' }) {
   const { addToCart, wishlist, toggleWishlist } = useStore();
   const wished = wishlist.includes(product.slug);
   const off = product.mrp ? Math.round((1 - product.price / product.mrp) * 100) : 0;
+  const isList = layout === 'list';
 
   return (
-    <Card>
-      <ImageWrap href={`/products/${product.slug}`} aria-label={product.name}>
-        <Image
-          src={product.images[0]}
-          alt={product.name}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-        />
-        {product.badge && (
-          <Badge $tone={product.badge === 'Premium' || product.badge === 'Festive' ? 'gold' : 'green'}>
-            {product.badge}
-          </Badge>
-        )}
-      </ImageWrap>
-      <WishBtn
-        className={wished ? 'active' : ''}
-        onClick={() => toggleWishlist(product.slug)}
-        aria-label={wished ? 'Remove from wishlist' : 'Add to wishlist'}
-        aria-pressed={wished}
-      >
-        <Heart size={17} />
-      </WishBtn>
-      <Body>
+    <Card $layout={layout}>
+      <Media $layout={layout}>
+        <ImageWrap
+          href={`/products/${product.slug}`}
+          aria-label={product.name}
+          $layout={layout}
+        >
+          <Image
+            src={product.images[0]}
+            alt={product.name}
+            fill
+            sizes={
+              isList
+                ? '(max-width: 380px) 100px, (max-width: 640px) 118px, (max-width: 1024px) 200px, 232px'
+                : '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw'
+            }
+          />
+          {product.badge && (
+            <Badge
+              className="badge"
+              $tone={product.badge === 'Premium' || product.badge === 'Festive' ? 'gold' : 'green'}
+            >
+              {product.badge}
+            </Badge>
+          )}
+        </ImageWrap>
+        <WishBtn
+          className={`wish ${wished ? 'active' : ''}`}
+          onClick={() => toggleWishlist(product.slug)}
+          aria-label={wished ? 'Remove from wishlist' : 'Add to wishlist'}
+          aria-pressed={wished}
+        >
+          <Heart size={17} />
+        </WishBtn>
+      </Media>
+      <Body $layout={layout}>
         <Cat>{product.type}</Cat>
         <Name href={`/products/${product.slug}`}>{product.name}</Name>
         <Rating title="Demo rating">
@@ -270,7 +380,7 @@ export default function ProductCard({ product }) {
           {off > 0 && <span className="mrp">{formatINR(product.mrp)}</span>}
           {off > 0 && <span className="off">{off}% off</span>}
         </Price>
-        <Actions>
+        <Actions $layout={layout}>
           <AddBtn onClick={() => addToCart(product)}>
             <ShoppingBag size={15} /> Add to Cart
           </AddBtn>
