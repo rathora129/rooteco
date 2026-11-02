@@ -4,7 +4,6 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import styled from 'styled-components';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import categories from '@/data/categories';
 import theme from '@/styles/theme';
 import { Container, Section } from '@/components/common/ui';
 import PageHero from '@/components/common/PageHero';
@@ -75,7 +74,12 @@ const Others = styled.div`
   }
 `;
 
-export default function CategoryListing({ category, subcategory = null, products }) {
+export default function CategoryListing({
+  category,
+  subcategory = null,
+  products,
+  categories = [],
+}) {
   const parentCrumbs = [{ label: 'Categories', href: '/categories' }];
   const crumbs = subcategory
     ? [
@@ -119,6 +123,7 @@ export default function CategoryListing({ category, subcategory = null, products
           <Suspense fallback={<ExplorerSkeleton />}>
             <ProductExplorer
               products={products}
+              categories={categories}
               lockedCategory={category.slug}
               lockedSubcategory={subcategory?.slug || null}
               subcategories={subcategory ? null : category.subcategories}

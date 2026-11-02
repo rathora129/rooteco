@@ -13,12 +13,11 @@ import {
   Search,
   Truck,
 } from 'lucide-react';
-import { brand } from '@/data/navigation';
 import { formatINR } from '@/lib/utils';
 import theme from '@/styles/theme';
 import { Button, Container, Section } from '@/components/common/ui';
 import PageHero from '@/components/common/PageHero';
-import { DemoNote, Field, Full, Grid } from '@/components/forms/formStyles';
+import { Field, Grid } from '@/components/forms/formStyles';
 
 const Wrap = styled.div`
   max-width: 860px;
@@ -46,6 +45,20 @@ const Panel = styled.div`
     color: ${theme.colors.muted};
     margin-bottom: 20px;
   }
+`;
+
+const ErrorNote = styled.div`
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: ${theme.radius.sm};
+  background: rgba(176, 58, 46, 0.08);
+  border: 1px solid rgba(176, 58, 46, 0.25);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: ${theme.colors.ink};
 `;
 
 const Status = styled.div`
@@ -212,61 +225,82 @@ const Help = styled.div`
 `;
 
 const STAGES = [
-  { title: 'Order received', text: 'Purchase order confirmed and logged.' },
-  { title: 'Branding approved', text: 'Artwork and mock-up signed off by you.' },
-  { title: 'In production', text: 'Gifts are being branded, assembled and packed.' },
-  { title: 'Quality check', text: 'Final inspection against approved samples.' },
-  { title: 'Dispatched', text: 'Handed to the delivery partner with tracking.' },
-  { title: 'Delivered', text: 'Received at the shipping address.' },
+  { key: 'pending', title: 'Order received', text: 'Your order request is logged with our team.' },
+  { key: 'confirmed', title: 'Order confirmed', text: 'Stock and delivery details verified; invoice shared.' },
+  { key: 'processing', title: 'In production', text: 'Gifts are being branded, assembled and packed.' },
+  { key: 'packed', title: 'Quality check & packed', text: 'Final inspection against the approved sample.' },
+  { key: 'shipped', title: 'Dispatched', text: 'Handed to the delivery partner with tracking.' },
+  { key: 'delivered', title: 'Delivered', text: 'Received at the shipping address.' },
 ];
 
-const CURRENT = 2;
+const STATUS_INDEX = { pending: 0, confirmed: 1, processing: 2, packed: 3, shipped: 4, delivered: 5 };
+
+const STATUS_LABEL = {
+  pending: 'Order received',
+  confirmed: 'Confirmed',
+  processing: 'In production',
+  packed: 'Packed',
+  shipped: 'Dispatched',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+};
+
+const PAYMENT_LABEL = {
+  pending: 'Payment pending',
+  authorized: 'Payment authorised',
+  paid: 'Paid',
+  failed: 'Payment failed',
+  refunded: 'Refunded',
+};
 
 const fmt = (iso) =>
   iso
     ? new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
 
-export default function TrackOrderPage() {
+export default function TrackOrderPage({ initialNumber = '', contact = {} }) {
   const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = (event) => {
+  const email = contact.email || 'hello@rooteco.in';
+  const phone = contact.phone || '';
+
+  const onSubmit = async (event) => {
     event.preventDefault();
+    if (loading) return;
+    setError('');
+    setResult(null);
+    setLoading(true);
     const data = Object.fromEntries(new FormData(event.currentTarget).entries());
-    let saved = null;
-    try {
-      const raw = sessionStorage.getItem('rooteco-order');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (
-          String(parsed.id).toLowerCase() === String(data.orderId).trim().toLowerCase() ||
-          parsed.customer?.email?.toLowerCase() === String(data.email).trim().toLowerCase()
-        ) {
-          saved = parsed;
-        }
-      }
-    } catch {
-      saved = null;
-    }
 
-    setResult({
-      id: saved?.id || String(data.orderId).trim().toUpperCase(),
-      email: String(data.email).trim(),
-      matched: Boolean(saved),
-      placed: saved ? fmt(saved.date) : null,
-      items: saved?.itemCount || null,
-      total: saved?.total || null,
-      status: CURRENT,
-      eta: '3–5 working days after dispatch (demo)',
-    });
+    try {
+      const response = await fetch('/api/track-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ number: data.orderId, email: data.email }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success) {
+        throw new Error(payload?.error?.message || 'We could not find that order. Check the reference and email.');
+      }
+      setResult(payload.data);
+    } catch (lookupError) {
+      setError(lookupError.message || 'We could not find that order. Check the reference and email.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const current = result ? STATUS_INDEX[result.status] ?? 0 : 0;
+  const itemCount = result?.items?.reduce((sum, item) => sum + item.qty, 0) || 0;
 
   return (
     <>
       <PageHero
         eyebrow="Order tracking"
         title="Track your order"
-        subtitle="Enter your order reference and email to see the latest demo status. This tracker is a simulated preview — no live logistics data is connected."
+        subtitle="Enter your order reference and the email used at checkout to see the latest status from our workshop."
         crumbs={[{ label: 'Track Order' }]}
       />
 
@@ -276,7 +310,8 @@ export default function TrackOrderPage() {
             <Panel>
               <h2>Find your order</h2>
               <p className="lead">
-                Your reference looks like <strong>RE-123456</strong> (demo format).
+                Your reference looks like <strong>RE-261103-A1B2</strong> — it is on your order
+                confirmation.
               </p>
               <form onSubmit={onSubmit}>
                 <Grid>
@@ -285,7 +320,8 @@ export default function TrackOrderPage() {
                     <input
                       name="orderId"
                       required
-                      placeholder="RE-123456"
+                      defaultValue={initialNumber}
+                      placeholder="RE-261103-A1B2"
                       autoComplete="off"
                     />
                   </Field>
@@ -301,14 +337,11 @@ export default function TrackOrderPage() {
                   </Field>
                 </Grid>
                 <div style={{ marginTop: 20 }}>
-                  <Button type="submit">
-                    <Search size={15} /> Track Order
+                  <Button type="submit" disabled={loading}>
+                    <Search size={15} /> {loading ? 'Looking up…' : 'Track order'}
                   </Button>
                 </div>
-                <DemoNote>
-                  Demo tracker — statuses are illustrative and no live shipment lookup is
-                  performed.
-                </DemoNote>
+                {error && <ErrorNote role="alert">{error}</ErrorNote>}
               </form>
             </Panel>
 
@@ -320,52 +353,52 @@ export default function TrackOrderPage() {
                   </span>
                   <div className="id">
                     <span>Order reference</span>
-                    <strong>{result.id}</strong>
+                    <strong>{result.number}</strong>
                   </div>
-                  <span className="pill">In production · Demo</span>
+                  <span className="pill">{STATUS_LABEL[result.status] || result.status}</span>
                 </div>
                 <div className="body">
                   <div className="meta">
-                    {result.matched ? (
-                      <>
-                        <span>
-                          Placed: <strong>{result.placed}</strong>
-                        </span>
-                        <span>
-                          Items: <strong>{result.items}</strong>
-                        </span>
-                        <span>
-                          Order total: <strong>{formatINR(result.total)}</strong>
-                        </span>
-                      </>
-                    ) : (
-                      <span>
-                        Showing a simulated status for{' '}
-                        <strong>{result.email}</strong>. No matching demo order was found in this
-                        browser — the timeline below is illustrative only.
-                      </span>
-                    )}
                     <span>
-                      Estimated dispatch: <strong>{result.eta}</strong>
+                      Placed: <strong>{fmt(result.createdAt)}</strong>
+                    </span>
+                    <span>
+                      Items: <strong>{itemCount}</strong>
+                    </span>
+                    <span>
+                      Order total: <strong>{formatINR(result.total)}</strong>
+                    </span>
+                    <span>
+                      Payment: <strong>{PAYMENT_LABEL[result.paymentStatus] || result.paymentStatus}</strong>
+                    </span>
+                    <span>
+                      Deliver to: <strong>{[result.city, result.state].filter(Boolean).join(', ')}</strong>
                     </span>
                   </div>
-                  <Timeline>
-                    {STAGES.map((stage, i) => {
-                      const done = i < result.status;
-                      const now = i === result.status;
-                      return (
-                        <li key={stage.title} className={`${done ? 'done' : ''} ${now ? 'now' : ''}`}>
-                          <span className="dot">
-                            {done ? <Check size={14} /> : now ? <Package size={13} /> : i + 1}
-                          </span>
-                          <div>
-                            <h3>{stage.title}</h3>
-                            <p>{stage.text}</p>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </Timeline>
+                  {result.status === 'cancelled' ? (
+                    <p style={{ fontSize: 13.5, color: theme.colors.muted }}>
+                      This order was cancelled. If this is unexpected, contact our team and we will
+                      help you place a fresh order.
+                    </p>
+                  ) : (
+                    <Timeline>
+                      {STAGES.map((stage, i) => {
+                        const done = i < current;
+                        const now = i === current;
+                        return (
+                          <li key={stage.key} className={`${done ? 'done' : ''} ${now ? 'now' : ''}`}>
+                            <span className="dot">
+                              {done ? <Check size={14} /> : now ? <Package size={13} /> : i + 1}
+                            </span>
+                            <div>
+                              <h3>{stage.title}</h3>
+                              <p>{stage.text}</p>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </Timeline>
+                  )}
                 </div>
               </Status>
             )}
@@ -377,20 +410,22 @@ export default function TrackOrderPage() {
                   If you can&apos;t find your reference, our team can look it up for you.
                 </p>
                 <Help>
-                  <a href={`mailto:${brand.email}`}>
+                  <a href={`mailto:${email}`}>
                     <Mail size={20} />
                     <div>
                       Email support
-                      <span>{brand.email}</span>
+                      <span>{email}</span>
                     </div>
                   </a>
-                  <a href={`tel:${brand.phone.replace(/\s/g, '')}`}>
-                    <Phone size={20} />
-                    <div>
-                      Call us
-                      <span>{brand.phone}</span>
-                    </div>
-                  </a>
+                  {phone && (
+                    <a href={`tel:${phone.replace(/\s/g, '')}`}>
+                      <Phone size={20} />
+                      <div>
+                        Call us
+                        <span>{phone}</span>
+                      </div>
+                    </a>
+                  )}
                   <Link href="/faq">
                     <Clock size={20} />
                     <div>
@@ -406,7 +441,6 @@ export default function TrackOrderPage() {
                     </div>
                   </Link>
                 </Help>
-                <DemoNote>Demo contact details for this storefront.</DemoNote>
               </Panel>
             )}
           </Wrap>

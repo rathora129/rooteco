@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, Search, X } from 'lucide-react';
-import { searchProducts } from '@/lib/search';
 import { formatINR } from '@/lib/utils';
 import theme from '@/styles/theme';
 
@@ -147,6 +146,8 @@ const ViewAll = styled(Link)`
 
 export default function SearchOverlay({ open, onClose }) {
   const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
   const router = useRouter();
 
@@ -169,7 +170,35 @@ export default function SearchOverlay({ open, onClose }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const results = useMemo(() => searchProducts(query).slice(0, 8), [query]);
+  useEffect(() => {
+    const term = query.trim();
+    if (term.length < 2) {
+      setResults([]);
+      setLoading(false);
+      return undefined;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `/api/products?q=${encodeURIComponent(term)}&pageSize=8`,
+          { signal: controller.signal }
+        );
+        if (!response.ok) throw new Error('Search failed');
+        const payload = await response.json();
+        setResults(payload.data || []);
+      } catch (error) {
+        if (error.name !== 'AbortError') setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [query]);
 
   const submit = (e) => {
     e.preventDefault();
@@ -221,7 +250,7 @@ export default function SearchOverlay({ open, onClose }) {
                 </Hint>
               )}
 
-              {query && results.length === 0 && (
+              {query && !loading && results.length === 0 && (
                 <Hint>
                   No results for “{query}”. Try “hampers”, “tech” or “apparel”.
                 </Hint>
@@ -239,7 +268,7 @@ export default function SearchOverlay({ open, onClose }) {
                           <strong>{p.name}</strong>
                           <span>{p.type}</span>
                         </span>
-                        <span className="price">{formatINR(p.price)}</span>
+                        <span className="price">{formatINR(p.salePrice ?? p.price)}</span>
                       </Row>
                     ))}
                   </Results>

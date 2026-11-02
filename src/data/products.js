@@ -1,4 +1,4 @@
-import { unsplash } from '@/lib/utils';
+import { unsplash } from '../lib/utils.js';
 
 // Central product catalog. Replace this array (or swap for API calls)
 // without touching any UI component.

@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import styled from 'styled-components';
 import { Quote, Star } from 'lucide-react';
-import testimonials from '@/data/testimonials';
 import Marquee from '@/components/common/Marquee';
 import Reveal from '@/components/common/Reveal';
 import { Container, Eyebrow, Section, SectionHead } from '@/components/common/ui';
@@ -86,15 +85,16 @@ const DemoNote = styled.p`
   }
 `;
 
-export default function WallOfLove() {
+export default function WallOfLove({ testimonials = [] }) {
+  if (!testimonials.length) return null;
   return (
     <Section>
       <Container>
         <Reveal>
           <SectionHead>
             <Eyebrow>Wall of Love</Eyebrow>
-            <h2>Demo reviews, real design intent</h2>
-            <p>Illustrative testimonials for layout preview — not verified customer reviews.</p>
+            <h2>What our clients say</h2>
+            <p>Stories from teams who trusted RootEco with their gifting moments.</p>
           </SectionHead>
         </Reveal>
       </Container>
@@ -115,8 +115,8 @@ export default function WallOfLove() {
                   {t.role.charAt(0)}
                 </span>
                 <div>
-                  <strong>{t.client}, {t.role}</strong>
-                  <span>{t.company} (demo)</span>
+                  <strong>{t.client}{t.role ? `, ${t.role}` : ''}</strong>
+                  <span>{t.company}</span>
                 </div>
               </figcaption>
             </Card>
@@ -125,7 +125,7 @@ export default function WallOfLove() {
       </Reveal>
       <Container>
         <DemoNote>
-          Placeholder reviews for layout preview — see <Link href="/wall-of-love">all testimonials</Link>.
+          See <Link href="/wall-of-love">all testimonials</Link>.
         </DemoNote>
       </Container>
     </Section>

@@ -1,4 +1,4 @@
-import { unsplash } from '@/lib/utils';
+import { unsplash } from '../lib/utils.js';
 
 export const festivalCollections = [
   {

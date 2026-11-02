@@ -6,7 +6,6 @@ import Image from 'next/image';
 import styled from 'styled-components';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import heroBanners from '@/data/banners';
 import theme from '@/styles/theme';
 import { Container } from '@/components/common/ui';
 
@@ -221,23 +220,24 @@ const ArrowBtn = styled.button`
   }
 `;
 
-export default function HeroSlider() {
+export default function HeroSlider({ banners = [] }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const reduce = useReducedMotion();
 
   const go = useCallback(
-    (dir) => setIndex((i) => (i + dir + heroBanners.length) % heroBanners.length),
-    []
+    (dir) => setIndex((i) => (i + dir + banners.length) % banners.length),
+    [banners.length]
   );
 
   useEffect(() => {
-    if (reduce || paused) return undefined;
+    if (reduce || paused || banners.length < 2) return undefined;
     const t = setInterval(() => go(1), 6500);
     return () => clearInterval(t);
-  }, [go, reduce, paused]);
+  }, [go, reduce, paused, banners.length]);
 
-  const banner = heroBanners[index];
+  if (!banners.length) return null;
+  const banner = banners[Math.min(index, banners.length - 1)];
 
   return (
     <Hero
@@ -305,7 +305,7 @@ export default function HeroSlider() {
       <Controls>
         <div className="inner">
           <Dots>
-            {heroBanners.map((b, i) => (
+            {banners.map((b, i) => (
               <button
                 key={b.id}
                 className={i === index ? 'active' : ''}

@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import styled from 'styled-components';
 import { ArrowRight } from 'lucide-react';
-import { festivalCollections } from '@/data/collections';
 import Reveal from '@/components/common/Reveal';
 import { Container, Eyebrow, Section, SectionHead } from '@/components/common/ui';
 import theme from '@/styles/theme';
@@ -80,7 +79,8 @@ const Card = styled(Link)`
   }
 `;
 
-export default function FestivalGifting() {
+export default function FestivalGifting({ collections = [] }) {
+  if (!collections.length) return null;
   return (
     <Section as="div" style={{ padding: 0 }}>
       <Bg>
@@ -94,7 +94,7 @@ export default function FestivalGifting() {
               </SectionHead>
             </Reveal>
             <Grid>
-              {festivalCollections.map((col, i) => (
+              {collections.map((col, i) => (
                 <Reveal key={col.slug} delay={i * 0.07}>
                   <Card href={col.link}>
                     <Image

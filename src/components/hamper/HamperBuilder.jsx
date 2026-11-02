@@ -15,71 +15,11 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-import products from '@/data/products';
 import { useStore } from '@/lib/store';
-import { formatINR, unsplash } from '@/lib/utils';
+import { HAMPER_BOXES as BOXES, HAMPER_BRANDING as BRANDING, HAMPER_ITEM_SLUGS as ITEM_SLUGS } from '@/lib/hamper';
+import { formatINR } from '@/lib/utils';
 import theme from '@/styles/theme';
 import { Button, Container, Section } from '@/components/common/ui';
-
-const BOXES = [
-  {
-    id: 'kraft',
-    name: 'Kraft Keepsake Box',
-    desc: 'Recycled kraft board, jute ribbon, stamped logo.',
-    price: 199,
-    capacity: 4,
-    image: unsplash('photo-1549465220-1a8b9238cd48', 900),
-  },
-  {
-    id: 'signature',
-    name: 'Signature Green Box',
-    desc: 'Rigid box, magnetic close, gold foil branding.',
-    price: 399,
-    capacity: 6,
-    image: unsplash('photo-1607082348824-0a96f2a4b9da', 900),
-  },
-  {
-    id: 'luxe',
-    name: 'Luxe Wooden Crate',
-    desc: 'Reusable wooden crate with a printed lid.',
-    price: 699,
-    capacity: 8,
-    image: unsplash('photo-1513201099705-a9746e1e201f', 900),
-  },
-];
-
-const BRANDING = [
-  { id: 'none', name: 'No branding', desc: 'Plain packaging, gift-ready.', price: 0 },
-  {
-    id: 'sleeve',
-    name: 'Logo on box sleeve',
-    desc: 'One-colour logo printed on the sleeve.',
-    price: 149,
-  },
-  {
-    id: 'full',
-    name: 'Full custom packaging',
-    desc: 'Custom colours, sleeve, ribbon and card.',
-    price: 399,
-  },
-];
-
-const ITEM_SLUGS = [
-  'sustain-steel-bottle',
-  'scribe-premium-notebook',
-  'ceramic-mug-set',
-  'bloom-desk-plant',
-  'nectar-honey-jar',
-  'aroma-candle-duo',
-  'legacy-pen-set',
-  'journey-tote-bag',
-  'bamboo-cutlery-set',
-  'volt-powerbank-10k',
-  'comfort-cotton-tee',
-  'terrazzo-thermal-flask',
-];
-
-const HAMPER_ITEMS = ITEM_SLUGS.map((slug) => products.find((p) => p.slug === slug)).filter(Boolean);
 
 const Layout = styled.div`
   display: grid;
@@ -588,7 +528,7 @@ const Summary = styled.aside`
   }
 `;
 
-export default function HamperBuilder() {
+export default function HamperBuilder({ products = [] }) {
   const router = useRouter();
   const { addToCart, setCartOpen } = useStore();
   const [boxId, setBoxId] = useState(BOXES[1].id);
@@ -598,11 +538,16 @@ export default function HamperBuilder() {
   const [qty, setQty] = useState(1);
   const [limitHit, setLimitHit] = useState(false);
 
+  const hamperItems = useMemo(
+    () => ITEM_SLUGS.map((slug) => products.find((p) => p.slug === slug)).filter(Boolean),
+    [products]
+  );
+
   const box = BOXES.find((b) => b.id === boxId);
   const branding = BRANDING.find((b) => b.id === brandingId);
   const itemObjects = useMemo(
-    () => picked.map((slug) => HAMPER_ITEMS.find((p) => p.slug === slug)).filter(Boolean),
-    [picked]
+    () => picked.map((slug) => hamperItems.find((p) => p.slug === slug)).filter(Boolean),
+    [picked, hamperItems]
   );
   const itemsTotal = itemObjects.reduce((sum, p) => sum + p.price, 0);
   const perHamper = box.price + itemsTotal + branding.price;
@@ -640,6 +585,10 @@ export default function HamperBuilder() {
       images: [box.image],
       colors: [box.name],
       variants: [branding.name],
+      custom: true,
+      boxId: box.id,
+      brandingId: branding.id,
+      productSlugs: picked,
     };
     addToCart(hamper, {
       color: box.name,
@@ -711,7 +660,7 @@ export default function HamperBuilder() {
                 </Warning>
               )}
               <ItemGrid>
-                {HAMPER_ITEMS.map((item) => {
+                {hamperItems.map((item) => {
                   const active = picked.includes(item.slug);
                   return (
                     <ItemCard key={item.slug} $active={active}>

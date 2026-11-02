@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import styled, { css } from 'styled-components';
 import { Gift, LayoutGrid, List, Search, SlidersHorizontal, X } from 'lucide-react';
-import categories from '@/data/categories';
 import { useStore } from '@/lib/store';
 import theme from '@/styles/theme';
 import { Button, ButtonLink } from '@/components/common/ui';
@@ -452,6 +451,7 @@ export function ExplorerSkeleton() {
 
 export default function ProductExplorer({
   products,
+  categories = [],
   lockedCategory = null,
   lockedSubcategory = null,
   subcategories = null,

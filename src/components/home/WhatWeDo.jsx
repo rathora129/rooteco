@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import styled from 'styled-components';
 import { ArrowUpRight } from 'lucide-react';
-import categories from '@/data/categories';
 import Reveal from '@/components/common/Reveal';
 import { Container, Eyebrow, Section, SectionHead } from '@/components/common/ui';
 import theme from '@/styles/theme';
@@ -78,7 +77,7 @@ const Card = styled(Link)`
   }
 `;
 
-export default function WhatWeDo() {
+export default function WhatWeDo({ categories = [] }) {
   const cards = categories.filter((c) => c.homeCard);
   return (
     <Section>

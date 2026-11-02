@@ -4,8 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import styled from 'styled-components';
 import { ArrowRight } from 'lucide-react';
-import categories from '@/data/categories';
-import { getProductsByCategory } from '@/data/products';
 import theme from '@/styles/theme';
 import { Container, Section } from '@/components/common/ui';
 import PageHero from '@/components/common/PageHero';
@@ -127,7 +125,7 @@ const Explore = styled(Link)`
   }
 `;
 
-export default function CategoriesIndex() {
+export default function CategoriesIndex({ categories = [] }) {
   return (
     <>
       <PageHero
@@ -141,7 +139,7 @@ export default function CategoriesIndex() {
         <Container>
           <Grid>
             {categories.map((cat) => {
-              const count = getProductsByCategory(cat.slug).length;
+              const count = cat.productCount || 0;
               return (
                 <Card key={cat.slug}>
                   <Media href={`/categories/${cat.slug}`} aria-label={cat.name}>

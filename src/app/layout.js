@@ -1,11 +1,6 @@
 import { Playfair_Display, Inter } from 'next/font/google';
 import StyledComponentsRegistry from '@/lib/registry';
 import Providers from '@/components/layout/Providers';
-import AnnouncementBar from '@/components/layout/AnnouncementBar';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import CartDrawer from '@/components/cart/CartDrawer';
-import FloatingWhatsAppButton from '@/components/common/FloatingWhatsAppButton';
 import './globals.css';
 
 const display = Playfair_Display({
@@ -19,10 +14,7 @@ const body = Inter({
 });
 
 export const metadata = {
-  title: {
-    default: 'RootEco — Premium Corporate Gifting',
-    template: '%s | RootEco',
-  },
+  title: 'RootEco — Premium Corporate Gifting',
   description:
     'Thoughtful corporate gifting, festival hampers, welcome kits and branded merchandise. Curated, customized and delivered pan India.',
 };
@@ -32,14 +24,7 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>
         <StyledComponentsRegistry>
-          <Providers>
-            <AnnouncementBar />
-            <Navbar />
-            <main>{children}</main>
-            <Footer />
-            <CartDrawer />
-            <FloatingWhatsAppButton />
-          </Providers>
+          <Providers>{children}</Providers>
         </StyledComponentsRegistry>
       </body>
     </html>

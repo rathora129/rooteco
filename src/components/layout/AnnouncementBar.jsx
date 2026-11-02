@@ -45,11 +45,15 @@ const Inner = styled.div`
   }
 `;
 
-export default function AnnouncementBar() {
+export default function AnnouncementBar({
+  message = 'Thoughtful Gifting. Made Effortless.',
+  active = true,
+}) {
+  if (!active || !message) return null;
   return (
     <Bar>
       <Inner>
-        <span className="msg">Thoughtful Gifting. Made Effortless.</span>
+        <span className="msg">{message}</span>
         <span className="meta">
           <Truck /> Pan India Delivery
         </span>

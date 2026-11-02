@@ -5,12 +5,11 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styled from 'styled-components';
 import { ArrowRight, Search, Sparkles, X } from 'lucide-react';
-import categories from '@/data/categories';
-import { getBestSellers } from '@/data/products';
-import { popularSearches, searchProducts } from '@/lib/search';
 import theme from '@/styles/theme';
 import { Button, Container, Section } from '@/components/common/ui';
 import ProductCard from '@/components/common/ProductCard';
+
+const popularSearches = ['Diwali hamper', 'Welcome kit', 'Bottle', 'Notebook', 'Hoodie'];
 
 const Bar = styled.form`
   display: flex;
@@ -192,7 +191,7 @@ const CatPill = styled(Link)`
   }
 `;
 
-export default function SearchResults() {
+export default function SearchResults({ products = [], categories = [] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initial = searchParams.get('q') || '';
@@ -204,8 +203,17 @@ export default function SearchResults() {
   }, [paramString]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const q = (searchParams.get('q') || '').trim();
-  const results = useMemo(() => searchProducts(q), [q]);
-  const bestSellers = getBestSellers().slice(0, 4);
+  const results = useMemo(() => {
+    const needle = q.toLowerCase();
+    if (!needle) return [];
+    return products.filter((product) => {
+      const category = categories.find((c) => c.slug === product.category);
+      return [product.name, product.type, product.description, category?.name, ...(product.occasions || [])]
+        .filter(Boolean)
+        .some((field) => String(field).toLowerCase().includes(needle));
+    });
+  }, [q, products, categories]);
+  const bestSellers = products.filter((p) => p.bestSeller).slice(0, 4);
 
   const submit = (e) => {
     e.preventDefault();

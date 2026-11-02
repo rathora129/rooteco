@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,12 +10,14 @@ import {
   ArrowRight,
   Banknote,
   CreditCard,
+  Landmark,
   LockKeyhole,
+  ShieldCheck,
   ShoppingBag,
-  Smartphone,
   Truck,
 } from 'lucide-react';
 import { useStore } from '@/lib/store';
+import { trackEvent } from '@/lib/tracking';
 import { formatINR } from '@/lib/utils';
 import theme from '@/styles/theme';
 import { Button, ButtonLink, Container, Section } from '@/components/common/ui';
@@ -343,21 +345,6 @@ const Summary = styled.aside`
   }
 `;
 
-const CheckLine = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 13.5px;
-  color: ${theme.colors.ink};
-  margin-top: 18px;
-  cursor: pointer;
-  input {
-    accent-color: ${theme.colors.forest};
-    width: 16px;
-    height: 16px;
-  }
-`;
-
 const Empty = styled.div`
   text-align: center;
   padding: 70px 24px;
@@ -381,77 +368,264 @@ const Empty = styled.div`
 `;
 
 const PAYMENTS = [
-  { id: 'upi', label: 'UPI', hint: 'Pay via any UPI app', icon: Smartphone },
-  { id: 'card', label: 'Credit / Debit card', hint: 'Visa, Mastercard, RuPay', icon: CreditCard },
-  { id: 'netbanking', label: 'Net banking', hint: 'All major Indian banks', icon: Banknote },
+  {
+    id: 'bank-transfer',
+    label: 'Bank transfer / proforma invoice',
+    hint: 'We email a GST invoice; pay via NEFT or RTGS',
+    icon: Landmark,
+    tag: 'Recommended',
+  },
+  {
+    id: 'cod',
+    label: 'Cash on delivery',
+    hint: 'Pay by cash or UPI when your gifts arrive',
+    icon: Banknote,
+    tag: 'Eligible pin codes',
+  },
 ];
+
+const ONLINE_PAYMENT = {
+  id: 'online',
+  label: 'Pay online',
+  hint: 'Secure card, UPI or netbanking via Razorpay',
+  icon: CreditCard,
+  tag: 'Instant confirmation',
+};
+
+function loadRazorpayScript() {
+  if (window.Razorpay) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Could not load the payment provider.'));
+    document.body.appendChild(script);
+  });
+}
+
+async function payOnline({ created, customerName, data }) {
+  const createResponse = await fetch('/api/payments/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId: created.id }),
+  });
+  const createPayload = await createResponse.json().catch(() => null);
+  if (!createResponse.ok || !createPayload?.success) {
+    throw new Error(createPayload?.error?.message || 'Could not start the online payment.');
+  }
+  const payment = createPayload.data;
+
+  await loadRazorpayScript();
+
+  await new Promise((resolve, reject) => {
+    const checkout = new window.Razorpay({
+      key: payment.keyId,
+      amount: payment.amount,
+      currency: payment.currency,
+      name: 'RootEco',
+      description: `Order ${payment.orderNumber}`,
+      order_id: payment.providerOrderId,
+      prefill: {
+        name: customerName,
+        email: data.email,
+        contact: data.phone,
+      },
+      notes: { orderId: created.id, orderNumber: payment.orderNumber },
+      theme: { color: '#0b3d2e' },
+      handler: async (response) => {
+        try {
+          const verifyResponse = await fetch('/api/payments/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: created.id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
+          const verifyPayload = await verifyResponse.json().catch(() => null);
+          if (!verifyResponse.ok || !verifyPayload?.success) {
+            throw new Error(
+              verifyPayload?.error?.message ||
+                'Payment verification is pending. We will confirm it on the order.'
+            );
+          }
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      },
+      modal: {
+        ondismiss: () => reject(new Error('The payment window was closed before payment was completed.')),
+      },
+    });
+    checkout.on('payment.failed', (event) => {
+      reject(new Error(event?.error?.description || 'The payment could not be completed.'));
+    });
+    checkout.open();
+  });
+}
 
 export default function CheckoutForm() {
   const router = useRouter();
   const { cart, cartSubtotal, cartCount, clearCart, setCartOpen, hydrated } = useStore();
-  const [payment, setPayment] = useState('upi');
-  const [billingSame, setBillingSame] = useState(true);
+  const [payment, setPayment] = useState('bank-transfer');
   const [placing, setPlacing] = useState(false);
+  const [error, setError] = useState('');
+  const [onlinePayment, setOnlinePayment] = useState({ enabled: false, keyId: null });
+  const trackedCheckout = useRef(false);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/payments/config')
+      .then((response) => response.json())
+      .then((payload) => {
+        if (!active || !payload?.success) return;
+        setOnlinePayment({
+          enabled: Boolean(payload.data?.onlineEnabled && payload.data?.keyId),
+          keyId: payload.data?.keyId || null,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     setCartOpen(false);
   }, [setCartOpen]);
 
+  useEffect(() => {
+    if (!hydrated || trackedCheckout.current || cart.length === 0) return;
+    trackedCheckout.current = true;
+    trackEvent('checkout_started', {
+      path: '/checkout',
+      metadata: { itemCount: cart.length, subtotal: cartSubtotal },
+    });
+  }, [hydrated, cart.length, cartSubtotal]);
+
   const shipping = cartSubtotal === 0 || cartSubtotal >= 2000 ? 0 : 150;
   const total = cartSubtotal + shipping;
+  const paymentOptions = onlinePayment.enabled ? [ONLINE_PAYMENT, ...PAYMENTS] : PAYMENTS;
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
     if (!cart.length || placing) return;
+    setError('');
     setPlacing(true);
 
     const data = Object.fromEntries(new FormData(event.currentTarget).entries());
-    const order = {
-      id: `RE-${Math.floor(100000 + Math.random() * 900000)}`,
-      date: new Date().toISOString(),
-      eta: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString(),
-      payment: PAYMENTS.find((p) => p.id === payment)?.label || payment,
-      paymentId: payment,
-      items: cart,
-      itemCount: cartCount,
-      subtotal: cartSubtotal,
-      shipping,
-      total,
-      customer: {
-        name: `${data.firstName} ${data.lastName}`.trim(),
-        email: data.email,
-        phone: data.phone,
-        company: data.company || '',
-      },
-      address: {
-        line1: data.line1,
-        line2: data.line2 || '',
-        city: data.city,
-        state: data.state,
-        pincode: data.pincode,
-        country: data.country || 'India',
-      },
-      billingSame,
-      billing: billingSame
-        ? null
-        : {
-            line1: data.billingLine1,
-            city: data.billingCity,
-            state: data.billingState,
-            pincode: data.billingPincode,
-          },
-      notes: data.notes || '',
-      demo: true,
-    };
+    const customerName = `${data.firstName || ''} ${data.lastName || ''}`.trim();
 
     try {
-      sessionStorage.setItem('rooteco-order', JSON.stringify(order));
-    } catch {
-      /* storage may be unavailable — confirmation page falls back gracefully */
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName,
+          email: data.email,
+          phone: data.phone,
+          company: data.company || undefined,
+          addressLine1: data.line1,
+          addressLine2: data.line2 || undefined,
+          city: data.city,
+          state: data.state,
+          pincode: data.pincode,
+          country: data.country || 'India',
+          notes: data.notes || undefined,
+          paymentMethod: payment,
+          items: cart.map((item) =>
+            item.custom
+              ? {
+                  custom: true,
+                  boxId: item.boxId,
+                  brandingId: item.brandingId,
+                  productSlugs: item.productSlugs,
+                  qty: item.qty,
+                  note: item.note || undefined,
+                }
+              : {
+                  slug: item.slug,
+                  qty: item.qty,
+                  color: item.color || undefined,
+                  variant: item.variant || undefined,
+                  note: item.note || undefined,
+                }
+          ),
+        }),
+      });
+
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success) {
+        const details = payload?.error?.details;
+        const detailText = Array.isArray(details)
+          ? details.map((detail) => detail.message).filter(Boolean).join(' ')
+          : '';
+        throw new Error(detailText || payload?.error?.message || 'We could not place your order. Please try again.');
+      }
+
+      const created = payload.data;
+      let paidOnline = false;
+      if (payment === 'online') {
+        try {
+          await payOnline({ created, customerName, data });
+          paidOnline = true;
+        } catch (paymentError) {
+          setError(
+            `${paymentError.message} Your order ${created.number} is saved with payment pending — our team will follow up.`
+          );
+        }
+      }
+
+      const paymentLabel =
+        payment === 'online'
+          ? ONLINE_PAYMENT.label
+          : PAYMENTS.find((p) => p.id === payment)?.label || payment;
+      const order = {
+        number: created.number,
+        date: created.createdAt,
+        payment: paymentLabel,
+        paymentId: paidOnline ? 'razorpay' : created.paymentMethod || payment,
+        paymentStatus: paidOnline ? 'paid' : created.paymentStatus || 'pending',
+        status: created.status || 'pending',
+        items: (created.items || []).map((item) => ({ ...item, price: Number(item.price) })),
+        itemCount: (created.items || []).reduce((sum, item) => sum + item.qty, 0),
+        subtotal: Number(created.subtotal),
+        shipping: Number(created.shipping),
+        discount: Number(created.discount || 0),
+        total: Number(created.total),
+        customer: {
+          name: customerName,
+          email: data.email,
+          phone: data.phone,
+          company: data.company || '',
+        },
+        address: {
+          line1: data.line1,
+          line2: data.line2 || '',
+          city: data.city,
+          state: data.state,
+          pincode: data.pincode,
+          country: data.country || 'India',
+        },
+        notes: data.notes || '',
+      };
+
+      try {
+        sessionStorage.setItem('rooteco-order', JSON.stringify(order));
+      } catch {
+        /* storage may be unavailable — the order still exists in the dashboard */
+      }
+      clearCart();
+      setCartOpen(false);
+      router.push('/order-confirmation');
+    } catch (submitError) {
+      setError(submitError.message || 'We could not place your order. Please try again.');
+      setPlacing(false);
     }
-    clearCart();
-    setCartOpen(false);
-    router.push('/order-confirmation');
   };
 
   if (!hydrated) {
@@ -493,7 +667,7 @@ export default function CheckoutForm() {
       <PageHero
         eyebrow="Almost there"
         title="Checkout"
-        subtitle="Add your details and choose a demo payment method. This storefront does not process real orders or payments."
+        subtitle="Add your details and choose how you'd like to settle your order. We'll confirm stock and share the invoice or delivery slot by email."
         crumbs={[{ label: 'Cart', href: '/cart' }, { label: 'Checkout' }]}
       />
 
@@ -598,53 +772,20 @@ export default function CheckoutForm() {
                     </Label>
                   </Full>
                 </Fields>
-
-                <CheckLine>
-                  <input
-                    type="checkbox"
-                    checked={billingSame}
-                    onChange={(e) => setBillingSame(e.target.checked)}
-                  />
-                  Billing address is the same as shipping
-                </CheckLine>
-
-                {!billingSame && (
-                  <Fields>
-                    <Full>
-                      <Label>
-                        Billing address <span className="req">*</span>
-                        <input name="billingLine1" required placeholder="Billing address" />
-                      </Label>
-                    </Full>
-                    <Label>
-                      City <span className="req">*</span>
-                      <input name="billingCity" required placeholder="City" />
-                    </Label>
-                    <Label>
-                      State <span className="req">*</span>
-                      <input name="billingState" required placeholder="State" />
-                    </Label>
-                    <Label>
-                      PIN code <span className="req">*</span>
-                      <input
-                        name="billingPincode"
-                        required
-                        inputMode="numeric"
-                        pattern="[0-9]{5,6}"
-                        placeholder="PIN code"
-                      />
-                    </Label>
-                  </Fields>
-                )}
               </Block>
 
               <Block>
                 <h2>
                   <span className="n">3</span> Payment
                 </h2>
-                <p className="lead">Choose how you&apos;d like to pay. All options are demo-only.</p>
+                <p className="lead">
+                  Choose how you&apos;d like to settle your order.
+                  {onlinePayment.enabled
+                    ? ' Online payments are confirmed instantly by our payment provider; bank transfers and cash on delivery are confirmed by our team.'
+                    : ' Online card payments are not enabled — our team confirms bank transfers and cash-on-delivery orders manually.'}
+                </p>
                 <Payments>
-                  {PAYMENTS.map((option) => {
+                  {paymentOptions.map((option) => {
                     const Icon = option.icon;
                     return (
                       <PayOption key={option.id} $active={payment === option.id}>
@@ -660,80 +801,29 @@ export default function CheckoutForm() {
                           <strong>{option.label}</strong>
                           <span>{option.hint}</span>
                         </span>
-                        <span className="demo">Demo</span>
+                        <span className="demo">{option.tag}</span>
                       </PayOption>
                     );
                   })}
                 </Payments>
 
-                {payment === 'upi' && (
-                  <Fields>
-                    <Full>
-                      <Label>
-                        UPI ID <span className="req">*</span>
-                        <input name="upiId" required placeholder="yourname@upi" />
-                      </Label>
-                    </Full>
-                  </Fields>
-                )}
-
-                {payment === 'card' && (
-                  <Fields>
-                    <Full>
-                      <Label>
-                        Card number <span className="req">*</span>
-                        <input
-                          name="cardNumber"
-                          required
-                          inputMode="numeric"
-                          placeholder="4111 1111 1111 1111"
-                        />
-                      </Label>
-                    </Full>
-                    <Label>
-                      Expiry <span className="req">*</span>
-                      <input name="cardExpiry" required placeholder="MM / YY" />
-                    </Label>
-                    <Label>
-                      CVV <span className="req">*</span>
-                      <input name="cardCvv" required inputMode="numeric" placeholder="123" />
-                    </Label>
-                    <Full>
-                      <Label>
-                        Name on card <span className="req">*</span>
-                        <input name="cardName" required placeholder="Full name" />
-                      </Label>
-                    </Full>
-                  </Fields>
-                )}
-
-                {payment === 'netbanking' && (
-                  <Fields>
-                    <Full>
-                      <Label>
-                        Bank <span className="req">*</span>
-                        <select name="bank" required defaultValue="">
-                          <option value="" disabled>
-                            Select your bank
-                          </option>
-                          <option>HDFC Bank</option>
-                          <option>ICICI Bank</option>
-                          <option>State Bank of India</option>
-                          <option>Axis Bank</option>
-                          <option>Kotak Mahindra Bank</option>
-                          <option>Other bank</option>
-                        </select>
-                      </Label>
-                    </Full>
-                  </Fields>
-                )}
-
                 <DemoNote>
-                  <LockKeyhole size={15} />
+                  <ShieldCheck size={15} />
                   <span>
-                    <strong>Demo checkout.</strong> No payment will be charged and no card details
-                    are stored or transmitted. Placing this order only shows a demo confirmation
-                    page.
+                    {onlinePayment.enabled ? (
+                      <>
+                        <strong>Payments are processed by Razorpay.</strong> Card, UPI and netbanking
+                        details are entered on the provider&apos;s secure checkout — RootEco never
+                        stores them. An order is marked paid only after the provider confirms the
+                        payment.
+                      </>
+                    ) : (
+                      <>
+                        <strong>No card details required.</strong> We never collect card numbers or UPI
+                        PINs on this site. Your order is created with payment pending and our team
+                        shares an invoice or confirms cash on delivery before dispatch.
+                      </>
+                    )}
                   </span>
                 </DemoNote>
               </Block>
@@ -781,17 +871,34 @@ export default function CheckoutForm() {
                 <strong>{formatINR(total)}</strong>
               </div>
               <p className="tax">Inclusive of all taxes.</p>
+              {error && (
+                <p
+                  role="alert"
+                  style={{
+                    fontSize: 12.5,
+                    lineHeight: 1.5,
+                    color: theme.colors.sale,
+                    background: 'rgba(176, 58, 46, 0.08)',
+                    border: '1px solid rgba(176, 58, 46, 0.25)',
+                    borderRadius: theme.radius.sm,
+                    padding: '10px 12px',
+                    marginBottom: 14,
+                  }}
+                >
+                  {error}
+                </p>
+              )}
               <Button className="place" type="submit" form="checkout-form" disabled={placing}>
-                {placing ? 'Placing order…' : 'Place Demo Order'} <ArrowRight size={16} />
+                {placing ? 'Placing order…' : 'Place order'} <ArrowRight size={16} />
               </Button>
               <div className="secure">
-                <LockKeyhole size={13} /> Secure demo checkout
+                <LockKeyhole size={13} /> Secure checkout · payment confirmed by our team
               </div>
               <p className="terms">
                 By placing this order you agree to our{' '}
                 <Link href="/terms-and-conditions">Terms &amp; Conditions</Link> and{' '}
-                <Link href="/privacy-policy">Privacy Policy</Link>. This is a demo storefront — no
-                payment is processed.
+                <Link href="/privacy-policy">Privacy Policy</Link>. Your order stays payment-pending
+                until we confirm the transfer or collect cash on delivery.
               </p>
               <div className="perk">
                 <Truck size={15} /> Estimated delivery in 5–7 working days after dispatch

@@ -13,7 +13,6 @@ import {
   ShoppingBag,
   X,
 } from 'lucide-react';
-import categories from '@/data/categories';
 import mainNav from '@/data/navigation';
 import { useStore } from '@/lib/store';
 import theme from '@/styles/theme';
@@ -223,7 +222,11 @@ const MobileMenu = styled.div`
   }
 `;
 
-export default function Navbar() {
+export default function Navbar({
+  categories = [],
+  featuredProduct = null,
+  logoUrl = '/images/rooteco-logo.png',
+}) {
   const { cartCount, wishlist, setCartOpen } = useStore();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -326,12 +329,7 @@ export default function Navbar() {
         <Inner>
           <Logo href="/" aria-label="RootEco home">
             <span className="chip">
-              <Image
-                src="/images/rooteco-logo.png"
-                alt="RootEco logo"
-                width={1080}
-                height={1058}
-              />
+              <Image src={logoUrl} alt="RootEco logo" width={1080} height={1058} />
             </span>
           </Logo>
 
@@ -374,6 +372,8 @@ export default function Navbar() {
                     onClose={closeMega}
                     onEnter={openMega}
                     onLeave={scheduleMegaClose}
+                    categories={categories}
+                    featuredProduct={featuredProduct}
                   />
                 </NavItem>
               ) : (
@@ -419,12 +419,7 @@ export default function Navbar() {
           <div className="top">
             <Logo href="/">
               <span className="chip">
-                <Image
-                  src="/images/rooteco-logo.png"
-                  alt="RootEco logo"
-                  width={1080}
-                  height={1058}
-                />
+                <Image src={logoUrl} alt="RootEco logo" width={1080} height={1058} />
               </span>
             </Logo>
             <MobileToggle onClick={() => setMobileOpen(false)} aria-label="Close menu">
@@ -439,6 +434,8 @@ export default function Navbar() {
           ))}
           <Link href="/build-your-own-hamper">Build Your Own Hamper</Link>
           <Link href="/get-a-quote">Get a Quote</Link>
+          <Link href="/collections">Collections</Link>
+          <Link href="/blog">Journal</Link>
 
           <h4>Shop by Category</h4>
           {categories.map((cat) => (

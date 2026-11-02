@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { getProductBySlug } from '@/data/products';
+import { trackEvent } from '@/lib/tracking';
 
 const StoreContext = createContext(null);
 
@@ -53,10 +53,18 @@ export function StoreProvider({ children }) {
           variant: variant || product.variants?.[0] || null,
           note: note || null,
           qty,
+          custom: Boolean(product.custom),
+          boxId: product.boxId || null,
+          brandingId: product.brandingId || null,
+          productSlugs: product.productSlugs || null,
         },
       ];
     });
     setCartOpen(true);
+    trackEvent('add_to_cart', {
+      productId: product.id,
+      metadata: { slug: product.slug, qty, custom: Boolean(product.custom) },
+    });
   }, []);
 
   const updateQty = useCallback((key, qty) => {
@@ -105,5 +113,3 @@ export function useStore() {
   if (!ctx) throw new Error('useStore must be used within StoreProvider');
   return ctx;
 }
-
-export { getProductBySlug };

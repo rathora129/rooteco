@@ -3,8 +3,6 @@
 import Link from 'next/link';
 import styled from 'styled-components';
 import { ArrowRight, Mail, Phone, Sparkles } from 'lucide-react';
-import faqs from '@/data/faqs';
-import { brand } from '@/data/navigation';
 import theme from '@/styles/theme';
 import { Container, Section } from '@/components/common/ui';
 import PageHero from '@/components/common/PageHero';
@@ -81,7 +79,7 @@ const HelpLine = styled.p`
   }
 `;
 
-export default function FAQPage() {
+export default function FAQPage({ faqs = [], contact = {} }) {
   return (
     <>
       <PageHero
@@ -100,17 +98,17 @@ export default function FAQPage() {
               <h2>Still have a question?</h2>
               <p>Pick the fastest way to reach us.</p>
               <div className="cards">
-                <a className="card" href={`mailto:${brand.email}`}>
+                <a className="card" href={`mailto:${contact.email || 'hello@rooteco.example.com'}`}>
                   <Mail size={20} />
                   <strong>Email us</strong>
-                  <span>{brand.email}</span>
+                  <span>{contact.email || 'hello@rooteco.example.com'}</span>
                   <span>Replies within one business day.</span>
                 </a>
-                <a className="card" href={`tel:${brand.phone.replace(/\s/g, '')}`}>
+                <a className="card" href={`tel:${String(contact.phone || '').replace(/\s/g, '')}`}>
                   <Phone size={20} />
                   <strong>Call us</strong>
-                  <span>{brand.phone}</span>
-                  <span>{brand.hours}</span>
+                  <span>{contact.phone || '+91 90000 00000'}</span>
+                  <span>{contact.hours || 'Mon–Sat, 10:00–19:00 IST'}</span>
                 </a>
                 <Link className="card" href="/get-a-quote">
                   <Sparkles size={20} />

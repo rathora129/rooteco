@@ -9,8 +9,6 @@ import Reveal from '@/components/common/Reveal';
 import FAQAccordion from '@/components/common/FAQAccordion';
 import { Container, Eyebrow, Section, SectionHead } from '@/components/common/ui';
 import theme from '@/styles/theme';
-import faqs from '@/data/faqs';
-import { brand } from '@/data/navigation';
 
 /* ---------- Section 14: "Swag is always..." equivalent ---------- */
 
@@ -215,7 +213,7 @@ export function CorporateMadeEasy() {
 
 /* ---------- Section 16: FAQ ---------- */
 
-export function HomeFaq() {
+export function HomeFaq({ faqs = [], email = 'hello@rooteco.example.com' }) {
   return (
     <Section>
       <Container style={{ maxWidth: 820 }}>
@@ -225,8 +223,8 @@ export function HomeFaq() {
             <h2>Frequently Asked Questions</h2>
             <p>
               If you have any other questions, please email us at{' '}
-              <a href={`mailto:${brand.email}`} style={{ color: theme.colors.forest, fontWeight: 600 }}>
-                {brand.email}
+              <a href={`mailto:${email}`} style={{ color: theme.colors.forest, fontWeight: 600 }}>
+                {email}
               </a>
               .
             </p>

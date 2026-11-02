@@ -4,8 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import styled, { css } from 'styled-components';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
-import categories from '@/data/categories';
-import products from '@/data/products';
 import { formatINR } from '@/lib/utils';
 import theme from '@/styles/theme';
 
@@ -275,14 +273,21 @@ const Quick = styled.div`
   }
 `;
 
-export default function MegaMenu({ open = false, onClose, onEnter, onLeave }) {
+export default function MegaMenu({
+  open = false,
+  onClose,
+  onEnter,
+  onLeave,
+  categories = [],
+  featuredProduct = null,
+}) {
   const columns = COLUMN_SLUGS.map((slug) =>
     categories.find((c) => c.slug === slug)
   ).filter(Boolean);
   const quick = QUICK_SLUGS.map((slug) =>
     categories.find((c) => c.slug === slug)
   ).filter(Boolean);
-  const featured = products.find((p) => p.featured) || products[0];
+  const featured = featuredProduct;
 
   return (
     <Panels
@@ -362,6 +367,12 @@ export default function MegaMenu({ open = false, onClose, onEnter, onLeave }) {
               {cat.name}
             </Link>
           ))}
+          <Link href="/collections" onClick={() => onClose?.()}>
+            Collections
+          </Link>
+          <Link href="/blog" onClick={() => onClose?.()}>
+            Journal
+          </Link>
           <Link className="all" href="/categories" onClick={() => onClose?.()}>
             All Categories <ArrowRight size={13} />
           </Link>

@@ -16,8 +16,6 @@ import {
   Phone,
   Sparkles,
 } from 'lucide-react';
-import products, { getProductBySlug } from '@/data/products';
-import { brand } from '@/data/navigation';
 import theme from '@/styles/theme';
 import { Button, ButtonLink, Container, Section } from '@/components/common/ui';
 import { CheckLine, DemoNote, Field, Full, Grid, Success, SubmitRow } from './formStyles';
@@ -235,20 +233,58 @@ const OCCASIONS = [
   'Other',
 ];
 
-export default function QuoteForm() {
+export default function QuoteForm({ products = [], contact = {} }) {
   const searchParams = useSearchParams();
   const initialSlug = searchParams.get('product') || '';
-  const initialProduct = initialSlug ? getProductBySlug(initialSlug) : null;
+  const initialProduct = initialSlug ? products.find((p) => p.slug === initialSlug) : null;
   const [productSlug, setProductSlug] = useState(initialProduct ? initialSlug : '');
   const [submitted, setSubmitted] = useState(null);
-  const selected = getProductBySlug(productSlug);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const selected = products.find((p) => p.slug === productSlug);
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
+    if (submitting) return;
     const data = Object.fromEntries(new FormData(event.currentTarget).entries());
-    const reference = `Q-${Math.floor(100000 + Math.random() * 900000)}`;
-    setSubmitted({ reference, ...data });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setError('');
+    setSubmitting(true);
+    try {
+      const notes = [
+        data.occasion && `Occasion: ${data.occasion}`,
+        data.deliveryCity && `Delivery: ${data.deliveryCity}`,
+        data.requiredBy && `Required by: ${data.requiredBy}`,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      const response = await fetch('/api/quotes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.fullName,
+          company: data.company,
+          email: data.email,
+          phone: data.phone,
+          productId: selected?.id || null,
+          productName: selected?.name || (data.product === 'custom' ? 'Custom gifting' : null),
+          quantity: Number(data.quantity) || null,
+          budget: data.budget,
+          branding: [data.customization, notes].filter(Boolean).join('\n'),
+          message: data.message,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error?.message || 'Could not submit your quote request.');
+      }
+      const reference = `Q-${String(payload.data.id).slice(-6).toUpperCase()}`;
+      setSubmitted({ reference, ...data });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (submitError) {
+      setError(submitError.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -259,9 +295,8 @@ export default function QuoteForm() {
             <CheckCircle2 size={44} />
             <h2>Quote request received</h2>
             <p>
-              Thanks, {String(submitted.fullName).split(' ')[0]}. In a live storefront our gifting
-              team would review your requirements and respond at{' '}
-              <strong>{submitted.email}</strong> within one business day.
+              Thanks, {String(submitted.fullName).split(' ')[0]}. Our gifting team will review your
+              requirements and respond at <strong>{submitted.email}</strong> within one business day.
             </p>
             <span className="ref">Reference {submitted.reference}</span>
             <div className="actions">
@@ -270,10 +305,6 @@ export default function QuoteForm() {
                 Send another enquiry
               </Button>
             </div>
-            <DemoNote style={{ textAlign: 'left' }}>
-              Demo form — nothing was sent or stored on a server. This confirmation only exists in
-              your current session.
-            </DemoNote>
           </Success>
         </Container>
       </Section>
@@ -446,9 +477,15 @@ export default function QuoteForm() {
                 </span>
               </CheckLine>
 
+              {error && (
+                <DemoNote role="alert" style={{ textAlign: 'left', color: theme.colors.sale }}>
+                  {error}
+                </DemoNote>
+              )}
+
               <SubmitRow>
-                <Button type="submit">
-                  Request My Quote <ArrowRight size={16} />
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? 'Sending…' : 'Request My Quote'} <ArrowRight size={16} />
                 </Button>
                 <span className="hint">No obligation · Response within one business day</span>
               </SubmitRow>
@@ -516,16 +553,15 @@ export default function QuoteForm() {
             <Card>
               <h3>Prefer to talk?</h3>
               <Contact>
-                <a href={`mailto:${brand.email}`}>
-                  <Mail size={16} /> {brand.email}
+                <a href={`mailto:${contact.email || 'hello@rooteco.example.com'}`}>
+                  <Mail size={16} /> {contact.email || 'hello@rooteco.example.com'}
                 </a>
-                <a href={`tel:${brand.phone.replace(/\s/g, '')}`}>
-                  <Phone size={16} /> {brand.phone}
+                <a href={`tel:${String(contact.phone || '').replace(/\s/g, '')}`}>
+                  <Phone size={16} /> {contact.phone || '+91 90000 00000'}
                 </a>
                 <span className="hours">
-                  <Clock size={16} /> {brand.hours}
+                  <Clock size={16} /> {contact.hours || 'Mon–Sat, 10:00–19:00 IST'}
                 </span>
-                <span className="demo">Demo contact details for this storefront.</span>
               </Contact>
             </Card>
           </Aside>

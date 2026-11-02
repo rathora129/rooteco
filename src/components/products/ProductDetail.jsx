@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -18,7 +18,6 @@ import {
   Truck,
   ZoomIn,
 } from 'lucide-react';
-import categories from '@/data/categories';
 import { useStore } from '@/lib/store';
 import { formatINR } from '@/lib/utils';
 import theme from '@/styles/theme';
@@ -26,7 +25,6 @@ import { Badge, Button, ButtonLink, Container, Price, Section } from '@/componen
 import { Breadcrumbs } from '@/components/common/PageHero';
 import FAQAccordion from '@/components/common/FAQAccordion';
 import ProductCarousel from '@/components/common/ProductCarousel';
-import faqs from '@/data/faqs';
 
 const COLOR_HEX = {
   'forest green': '#0B3D2E',
@@ -568,7 +566,12 @@ const Below = styled.div`
   }
 `;
 
-export default function ProductDetail({ product, related }) {
+export default function ProductDetail({
+  product,
+  related,
+  categories = [],
+  faqs = [],
+}) {
   const router = useRouter();
   const { addToCart, wishlist, toggleWishlist, setCartOpen } = useStore();
   const [active, setActive] = useState(0);
@@ -579,9 +582,21 @@ export default function ProductDetail({ product, related }) {
   const [origin, setOrigin] = useState('50% 50%');
   const [openSection, setOpenSection] = useState('description');
 
+  useEffect(() => {
+    fetch('/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'product_view',
+        path: `/products/${product.slug}`,
+        productId: product.id,
+      }),
+    }).catch(() => {});
+  }, [product.id, product.slug]);
+
   const cat = useMemo(
     () => categories.find((c) => c.slug === product.category),
-    [product.category]
+    [categories, product.category]
   );
   const sub = cat?.subcategories.find((s) => s.slug === product.subcategory);
   const off = product.mrp ? Math.round((1 - product.price / product.mrp) * 100) : 0;

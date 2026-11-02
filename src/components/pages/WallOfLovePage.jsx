@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import styled from 'styled-components';
 import { ArrowRight, MessageSquareQuote, Quote, Star } from 'lucide-react';
-import testimonials from '@/data/testimonials';
 import theme from '@/styles/theme';
 import { ButtonLink, Container, Section } from '@/components/common/ui';
 import PageHero from '@/components/common/PageHero';
@@ -132,13 +131,13 @@ const Invite = styled.div`
   }
 `;
 
-export default function WallOfLovePage() {
+export default function WallOfLovePage({ testimonials = [] }) {
   return (
     <>
       <PageHero
         eyebrow="Wall of Love"
         title="Gifting stories we'd love to hear"
-        subtitle="A preview of how verified customer stories will look once reviews are connected. Every quote on this page is illustrative demo copy — not a real testimonial."
+        subtitle="Stories from teams who trusted RootEco with their gifting moments — from onboarding kits to festival hampers."
         crumbs={[{ label: 'Wall of Love' }]}
       />
 

@@ -1,7 +1,6 @@
 'use client';
 
 import styled from 'styled-components';
-import { WHATSAPP_MESSAGE, WHATSAPP_NUMBER } from '@/data/navigation';
 import theme from '@/styles/theme';
 
 const WhatsAppIcon = () => (
@@ -115,11 +114,23 @@ const Button = styled.a`
   }
 `;
 
-export default function FloatingWhatsAppButton() {
-  const digits = String(WHATSAPP_NUMBER || '').replace(/\D/g, '');
-  if (!digits) return null;
+export default function FloatingWhatsAppButton({
+  number = '',
+  message = '',
+  enabled = true,
+}) {
+  const digits = String(number || '').replace(/\D/g, '');
+  if (!enabled || !digits) return null;
 
-  const href = `https://wa.me/${digits}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+  const href = `https://wa.me/${digits}${message ? `?text=${encodeURIComponent(message)}` : ''}`;
+
+  const trackClick = () => {
+    fetch('/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'whatsapp_click', path: window.location.pathname }),
+    }).catch(() => {});
+  };
 
   return (
     <Wrap>
@@ -129,6 +140,7 @@ export default function FloatingWhatsAppButton() {
         rel="noopener noreferrer"
         aria-label="Chat with RootEco on WhatsApp (opens in a new tab)"
         title="Chat with us on WhatsApp"
+        onClick={trackClick}
       >
         <WhatsAppIcon />
       </Button>

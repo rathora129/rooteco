@@ -13,7 +13,7 @@ import {
   Phone,
   Send,
 } from 'lucide-react';
-import { brand, offices } from '@/data/navigation';
+import { brand } from '@/data/navigation';
 import theme from '@/styles/theme';
 import { Button, Container, Section } from '@/components/common/ui';
 import PageHero from '@/components/common/PageHero';
@@ -104,60 +104,6 @@ const InfoCard = styled.div`
   }
 `;
 
-const Offices = styled.div`
-  h3 {
-    font-family: ${theme.fonts.body};
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: ${theme.colors.muted};
-    margin-bottom: 12px;
-  }
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const Office = styled.div`
-  background: #fff;
-  border: 1px solid ${theme.colors.line};
-  border-radius: ${theme.radius.md};
-  padding: 16px 18px;
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  svg {
-    color: ${theme.colors.green};
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  strong {
-    display: block;
-    font-size: 14.5px;
-    color: ${theme.colors.ink};
-  }
-  span {
-    display: block;
-    font-size: 12.5px;
-    color: ${theme.colors.muted};
-    line-height: 1.5;
-  }
-  em {
-    display: inline-block;
-    font-style: normal;
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: ${theme.colors.green};
-    background: ${theme.colors.cream};
-    padding: 2px 7px;
-    border-radius: 999px;
-    margin-top: 5px;
-  }
-`;
-
 const Quick = styled.div`
   background: ${theme.colors.cream};
   border: 1px solid ${theme.colors.line};
@@ -185,8 +131,53 @@ const TOPICS = [
   'Something else',
 ];
 
-export default function ContactPage() {
+export default function ContactPage({ contact = {} }) {
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
+
+  const email = contact.email || brand.email;
+  const phone = contact.phone || brand.phone;
+  const hours = contact.hours || brand.hours;
+  const address = contact.address || brand.address;
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    if (sending) return;
+    setError('');
+    setSending(true);
+    const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+    const topic = data.topic;
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          company: data.company || undefined,
+          email: data.email,
+          phone: data.phone,
+          productInterest: topic,
+          requirement: `${topic}: ${data.message}`,
+          source: 'contact-form',
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success) {
+        const details = payload?.error?.details;
+        const detailText = Array.isArray(details)
+          ? details.map((detail) => detail.message).filter(Boolean).join(' ')
+          : '';
+        throw new Error(detailText || payload?.error?.message || 'We could not send your message. Please try again.');
+      }
+      setSent(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (submitError) {
+      setError(submitError.message || 'We could not send your message. Please try again.');
+      setSending(false);
+    }
+  };
 
   return (
     <>
@@ -206,17 +197,14 @@ export default function ContactPage() {
                   <CheckCircle2 size={42} />
                   <h2>Message received</h2>
                   <p>
-                    Thanks for reaching out. In a live storefront our team would reply within one
-                    business day.
+                    Thanks for reaching out. Our gifting team has your enquiry and will reply
+                    within one business day.
                   </p>
                   <div className="actions" style={{ marginTop: 20 }}>
                     <Button onClick={() => setSent(false)} $variant="outline">
                       Send another message
                     </Button>
                   </div>
-                  <DemoNote>
-                    Demo contact form — nothing was sent to a server and no data left your browser.
-                  </DemoNote>
                 </Success>
               ) : (
                 <>
@@ -224,13 +212,7 @@ export default function ContactPage() {
                   <p className="lead">
                     Share a few details and we&apos;ll route your message to the right person.
                   </p>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      setSent(true);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                  >
+                  <form onSubmit={onSubmit}>
                     <Grid>
                       <Field>
                         Full name <span className="req">*</span>
@@ -255,8 +237,15 @@ export default function ContactPage() {
                         />
                       </Field>
                       <Field>
-                        Phone
-                        <input name="phone" type="tel" autoComplete="tel" placeholder="+91 90000 00000" />
+                        Phone <span className="req">*</span>
+                        <input
+                          name="phone"
+                          type="tel"
+                          required
+                          autoComplete="tel"
+                          inputMode="tel"
+                          placeholder="+91 90000 00000"
+                        />
                       </Field>
                       <Full>
                         <Field>
@@ -291,13 +280,30 @@ export default function ContactPage() {
                       </span>
                     </CheckLine>
                     <div style={{ marginTop: 20 }}>
-                      <Button type="submit">
-                        <Send size={15} /> Send Message
+                      <Button type="submit" disabled={sending}>
+                        <Send size={15} /> {sending ? 'Sending…' : 'Send message'}
                       </Button>
                     </div>
+                    {error && (
+                      <p
+                        role="alert"
+                        style={{
+                          marginTop: 14,
+                          padding: '10px 12px',
+                          borderRadius: 8,
+                          background: 'rgba(176, 58, 46, 0.08)',
+                          border: '1px solid rgba(176, 58, 46, 0.25)',
+                          color: theme.colors.sale,
+                          fontSize: 12.5,
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        {error}
+                      </p>
+                    )}
                     <DemoNote>
-                      Demo contact form — submissions stay in your browser. For real enquiries, use
-                      the email shown alongside.
+                      We use these details only to respond to your enquiry. Typical reply time is one
+                      business day.
                     </DemoNote>
                   </form>
                 </>
@@ -311,21 +317,28 @@ export default function ContactPage() {
                   <Mail size={18} />
                   <div>
                     <span>Email</span>
-                    <a href={`mailto:${brand.email}`}>{brand.email}</a>
+                    <a href={`mailto:${email}`}>{email}</a>
                   </div>
                 </div>
                 <div className="row">
                   <Phone size={18} />
                   <div>
                     <span>Phone</span>
-                    <a href={`tel:${brand.phone.replace(/\s/g, '')}`}>{brand.phone}</a>
+                    <a href={`tel:${phone.replace(/\s/g, '')}`}>{phone}</a>
                   </div>
                 </div>
                 <div className="row">
                   <Clock size={18} />
                   <div>
                     <span>Hours</span>
-                    <strong>{brand.hours}</strong>
+                    <strong>{hours}</strong>
+                  </div>
+                </div>
+                <div className="row">
+                  <MapPin size={18} />
+                  <div>
+                    <span>Address</span>
+                    <strong>{address}</strong>
                   </div>
                 </div>
                 <div className="row">
@@ -335,24 +348,7 @@ export default function ContactPage() {
                     <strong>Within one business day</strong>
                   </div>
                 </div>
-                <p className="note">Demo contact details for this storefront.</p>
               </InfoCard>
-
-              <div>
-                <Offices>
-                  <h3>Demo offices</h3>
-                  {offices.map((office) => (
-                    <Office key={office.city}>
-                      <MapPin size={17} />
-                      <div>
-                        <strong>{office.city}</strong>
-                        <span>{office.detail}</span>
-                        <em>{office.label}</em>
-                      </div>
-                    </Office>
-                  ))}
-                </Offices>
-              </div>
 
               <Quick>
                 Looking for bulk pricing? Skip the back-and-forth and{' '}

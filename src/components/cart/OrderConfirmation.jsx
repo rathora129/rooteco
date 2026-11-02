@@ -89,20 +89,20 @@ const Success = styled.div`
   }
 `;
 
-const DemoBar = styled.div`
+const NoticeBar = styled.div`
   margin-top: 18px;
   display: flex;
   gap: 9px;
   align-items: flex-start;
   padding: 12px 16px;
   border-radius: ${theme.radius.md};
-  background: rgba(201, 162, 39, 0.12);
-  border: 1px solid rgba(201, 162, 39, 0.3);
+  background: rgba(76, 122, 52, 0.1);
+  border: 1px solid rgba(76, 122, 52, 0.28);
   font-size: 12.5px;
   line-height: 1.6;
   color: ${theme.colors.ink};
   svg {
-    color: ${theme.colors.gold};
+    color: ${theme.colors.green};
     flex-shrink: 0;
     margin-top: 2px;
   }
@@ -350,7 +350,7 @@ export default function OrderConfirmation() {
         <PageHero
           eyebrow="Order confirmation"
           title="No recent order found"
-          subtitle="Once you place a demo order, its confirmation will appear here."
+          subtitle="Once you place an order, its confirmation will appear here."
           crumbs={[{ label: 'Order Confirmation' }]}
         />
         <Section>
@@ -359,7 +359,7 @@ export default function OrderConfirmation() {
               <ShoppingBag size={40} />
               <h2>Nothing to show yet</h2>
               <p>
-                This page reads the most recent demo order from your browser session. Start with a
+                This page shows the most recent order placed in this browser session. Start with a
                 gift and complete checkout to see it.
               </p>
               <ButtonLink href="/products">
@@ -373,15 +373,28 @@ export default function OrderConfirmation() {
   }
 
   const steps = [
-    { title: 'Order placed', text: `${fmtDate(order.date)} — demo order received`, done: true },
+    { title: 'Order placed', text: `${fmtDate(order.date)} — we have your request`, done: true },
     {
-      title: 'Branding mock-up',
-      text: 'We share artwork and a digital mock-up for approval (demo).',
-      done: true,
+      title: 'Review & invoice',
+      text:
+        order.paymentId === 'bank-transfer'
+          ? 'Our team verifies stock and emails a proforma invoice with bank details.'
+          : 'Our team verifies stock, delivery eligibility and confirms your COD order.',
+      done: false,
     },
-    { title: 'Production', text: 'Begins after your mock-up sign-off (demo).', done: false },
+    { title: 'Production & branding', text: 'Branding artwork is approved before dispatch.', done: false },
     { title: 'Dispatch & delivery', text: 'Tracked delivery to your shipping address.', done: false },
   ];
+
+  const paymentStatusLabel = {
+    pending: 'Payment pending',
+    authorized: 'Payment authorised',
+    paid: 'Paid',
+    failed: 'Payment failed',
+    refunded: 'Refunded',
+  }[order.paymentStatus] || 'Payment pending';
+
+  const eta = new Date(new Date(order.date).getTime() + 7 * 24 * 60 * 60 * 1000);
 
   return (
     <>
@@ -394,24 +407,26 @@ export default function OrderConfirmation() {
             <div>
               <h1>Thank you, {order.customer.name.split(' ')[0]}!</h1>
               <p>
-                Your demo order is confirmed. A confirmation would normally be emailed to{' '}
-                {order.customer.email}. No payment has been processed.
+                Your order request is in. No payment has been taken yet — our gifting team will
+                review stock and contact you at {order.customer.email} with the next step.
               </p>
             </div>
             <div className="id">
               <span>Order reference</span>
-              <strong>{order.id}</strong>
+              <strong>{order.number}</strong>
             </div>
           </Success>
 
-          <DemoBar>
+          <NoticeBar>
             <Package size={16} />
             <span>
-              <strong>This is a demo storefront.</strong> No real order was placed, no payment was
-              taken and no shipment will be dispatched. The information below is stored only in
-              this browser session.
+              <strong>{paymentStatusLabel}.</strong>{' '}
+              {order.paymentId === 'bank-transfer'
+                ? 'Share the proforma invoice with your accounts team and pay via NEFT/RTGS. We dispatch after the transfer is confirmed.'
+                : 'Pay by cash or UPI at delivery. Our team will confirm COD eligibility for your PIN code before dispatch.'}{' '}
+              You can follow progress from the Track order page with your order number and email.
             </span>
-          </DemoBar>
+          </NoticeBar>
 
           <Layout>
             <div>
@@ -420,11 +435,13 @@ export default function OrderConfirmation() {
                   <Package size={19} /> Order details
                 </h2>
                 <Items>
-                  {order.items.map((item) => (
-                    <div className="item" key={item.key}>
-                      <span className="thumb">
-                        <Image src={item.image} alt={item.name} fill sizes="62px" />
-                      </span>
+                  {order.items.map((item, index) => (
+                    <div className="item" key={item.id || `${item.name}-${index}`}>
+                      {item.image && (
+                        <span className="thumb">
+                          <Image src={item.image} alt={item.name} fill sizes="62px" />
+                        </span>
+                      )}
                       <span className="info">
                         <strong>{item.name}</strong>
                         <span>
@@ -447,12 +464,18 @@ export default function OrderConfirmation() {
                     <span>Subtotal</span>
                     <strong>{formatINR(order.subtotal)}</strong>
                   </div>
+                  {order.discount > 0 && (
+                    <div className="line">
+                      <span>Discount</span>
+                      <strong>−{formatINR(order.discount)}</strong>
+                    </div>
+                  )}
                   <div className="line">
                     <span>Shipping</span>
                     <strong>{order.shipping === 0 ? 'Free' : formatINR(order.shipping)}</strong>
                   </div>
                   <div className="total">
-                    <span>Total paid (demo)</span>
+                    <span>Order total</span>
                     <strong>{formatINR(order.total)}</strong>
                   </div>
                 </Totals>
@@ -500,7 +523,7 @@ export default function OrderConfirmation() {
                   <dt>Phone</dt>
                   <dd>{order.customer.phone}</dd>
                   <dt>Estimated</dt>
-                  <dd>{fmtDate(order.eta)} (demo)</dd>
+                  <dd>{fmtDate(eta.toISOString())} (after confirmation)</dd>
                 </Meta>
               </Panel>
 
@@ -512,7 +535,9 @@ export default function OrderConfirmation() {
                   <dt>Method</dt>
                   <dd>{order.payment}</dd>
                   <dt>Status</dt>
-                  <dd style={{ color: theme.colors.green }}>Demo — not charged</dd>
+                  <dd style={{ color: order.paymentStatus === 'paid' ? theme.colors.green : theme.colors.gold }}>
+                    {paymentStatusLabel}
+                  </dd>
                   <dt>Order date</dt>
                   <dd>{fmtDate(order.date)}</dd>
                   {order.notes && (
@@ -552,7 +577,7 @@ export default function OrderConfirmation() {
             <ButtonLink href="/products">
               Continue shopping <ArrowRight size={16} />
             </ButtonLink>
-            <ButtonLink href="/track-order" $variant="outline">
+            <ButtonLink href={`/track-order?number=${encodeURIComponent(order.number)}`} $variant="outline">
               Track order
             </ButtonLink>
             <Button $variant="ghost" onClick={() => window.print()} style={{ color: theme.colors.forest, borderColor: theme.colors.forest }}>

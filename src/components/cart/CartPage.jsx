@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import styled from 'styled-components';
 import { ArrowRight, Minus, Plus, ShieldCheck, ShoppingBag, Trash2, Truck } from 'lucide-react';
-import { getBestSellers } from '@/data/products';
 import { useStore } from '@/lib/store';
 import { formatINR } from '@/lib/utils';
 import theme from '@/styles/theme';
@@ -269,20 +268,20 @@ const Suggestions = styled.div`
   }
 `;
 
-export default function CartPage() {
+export default function CartPage({ recommendations = [] }) {
   const { cart, cartSubtotal, cartCount, updateQty, removeFromCart, clearCart, hydrated } =
     useStore();
 
   const shipping = cartSubtotal === 0 || cartSubtotal >= 2000 ? 0 : 150;
   const total = cartSubtotal + shipping;
-  const suggestions = getBestSellers().slice(0, 6);
+  const suggestions = recommendations.slice(0, 6);
 
   return (
     <>
       <PageHero
         eyebrow="Your selections"
         title="Your Gift Cart"
-        subtitle="Review your gifts, adjust quantities and proceed to a secure demo checkout. Bulk quantities? Request a quote for tiered pricing."
+        subtitle="Review your gifts, adjust quantities and proceed to checkout. Bulk quantities? Request a quote for tiered pricing."
         crumbs={[{ label: 'Cart' }]}
       />
 
@@ -397,7 +396,7 @@ export default function CartPage() {
                   </Link>
                   <ul className="perks">
                     <li>
-                      <ShieldCheck size={15} /> Secure demo checkout — no real payment
+                      <ShieldCheck size={15} /> Secure checkout — invoice or COD confirmation
                     </li>
                     <li>
                       <Truck size={15} /> Pan-India delivery, single or multi-address

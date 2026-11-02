@@ -1,4 +1,4 @@
-import { unsplash } from '@/lib/utils';
+import { unsplash } from '../lib/utils.js';
 
 // Homepage hero slides. Swap imagery / copy here without touching HeroSlider.
 export const heroBanners = [

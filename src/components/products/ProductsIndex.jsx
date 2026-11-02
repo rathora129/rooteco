@@ -2,7 +2,6 @@
 
 import { Suspense } from 'react';
 import styled from 'styled-components';
-import products from '@/data/products';
 import theme from '@/styles/theme';
 import { Container, Section } from '@/components/common/ui';
 import PageHero from '@/components/common/PageHero';
@@ -20,7 +19,7 @@ const Note = styled.div`
   }
 `;
 
-export default function ProductsIndex() {
+export default function ProductsIndex({ products = [], categories = [] }) {
   return (
     <>
       <PageHero
@@ -38,7 +37,7 @@ export default function ProductsIndex() {
       <Section>
         <Container>
           <Suspense fallback={<ExplorerSkeleton />}>
-            <ProductExplorer products={products} />
+            <ProductExplorer products={products} categories={categories} />
           </Suspense>
         </Container>
       </Section>
