@@ -21,6 +21,25 @@ export function apiError(status, message, details = null) {
   );
 }
 
+function redactSecrets(text) {
+  return String(text)
+    .replace(/postgres(?:ql)?:\/\/[^\s"']+/gi, '[redacted-database-url]')
+    .replace(/(password|secret|api[_-]?key|token)\s*[:=]\s*\S+/gi, '$1=[redacted]');
+}
+
+function prismaValidationDetails(error) {
+  const message = String(error?.message || '');
+  const unknownArgument = /Unknown argument `([^`]+)`/.exec(message);
+  if (unknownArgument) {
+    return [{ path: '', message: `The field "${unknownArgument[1]}" is not supported for this record.` }];
+  }
+  const missingArgument = /Argument `([^`]+)` is missing/.exec(message);
+  if (missingArgument) {
+    return [{ path: '', message: `The field "${missingArgument[1]}" is required.` }];
+  }
+  return null;
+}
+
 export function handleRoute(handler) {
   return async (request, context) => {
     try {
@@ -35,6 +54,14 @@ export function handleRoute(handler) {
           message: issue.message,
         }));
         return apiError(422, 'Some fields need attention.', details);
+      }
+      if (error?.name === 'PrismaClientValidationError') {
+        console.error('[api] prisma validation error:', redactSecrets(error.message));
+        return apiError(
+          422,
+          'Some fields are not valid for this record. Please review the values and try again.',
+          prismaValidationDetails(error)
+        );
       }
       if (error?.code === 'P2002') {
         const fields = error.meta?.target;

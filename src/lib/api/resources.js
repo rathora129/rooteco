@@ -34,6 +34,13 @@ function withoutRelationKeys(data, keys) {
   return copy;
 }
 
+function relationLinks(ids, mode) {
+  if (mode === 'create') {
+    return ids.length ? { connect: ids.map((id) => ({ id })) } : null;
+  }
+  return { set: ids.map((id) => ({ id })) };
+}
+
 export const productResource = {
   model: 'product',
   schema: productSchema,
@@ -92,7 +99,8 @@ export const productResource = {
       clean.stockStatus = clean.stock > 0 ? 'in' : 'out';
     }
     if (Array.isArray(collectionIds)) {
-      clean.collections = { set: collectionIds.map((collectionId) => ({ id: collectionId })) };
+      const collections = relationLinks(collectionIds, mode);
+      if (collections) clean.collections = collections;
     }
     return clean;
   },
@@ -151,7 +159,8 @@ export const collectionResource = {
     if (!clean.slug) clean.slug = await uniqueSlug('collection', clean.name, id);
     else clean.slug = slugify(clean.slug);
     if (Array.isArray(productIds)) {
-      clean.products = { set: productIds.map((productId) => ({ id: productId })) };
+      const products = relationLinks(productIds, mode);
+      if (products) clean.products = products;
     }
     if (mode === 'create' && clean.status === undefined) clean.status = 'published';
     return clean;
