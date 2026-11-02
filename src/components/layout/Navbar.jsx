@@ -51,15 +51,12 @@ const Logo = styled(Link)`
   align-items: center;
   flex-shrink: 0;
   .chip {
-    width: 52px;
-    height: 52px;
-    border-radius: 12px;
-    background: #fff;
-    border: 1px solid ${theme.colors.line};
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
     display: grid;
     place-items: center;
     overflow: hidden;
-    padding: 3px;
     img {
       object-fit: contain;
       width: 100%;
@@ -68,8 +65,8 @@ const Logo = styled(Link)`
   }
   @media (max-width: 1024px) {
     .chip {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
     }
   }
 `;
@@ -332,8 +329,8 @@ export default function Navbar() {
               <Image
                 src="/images/rooteco-logo.png"
                 alt="RootEco logo"
-                width={1040}
-                height={780}
+                width={1080}
+                height={1058}
               />
             </span>
           </Logo>
@@ -425,8 +422,8 @@ export default function Navbar() {
                 <Image
                   src="/images/rooteco-logo.png"
                   alt="RootEco logo"
-                  width={1040}
-                  height={780}
+                  width={1080}
+                  height={1058}
                 />
               </span>
             </Logo>

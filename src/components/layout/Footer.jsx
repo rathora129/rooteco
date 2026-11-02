@@ -32,14 +32,14 @@ const BrandCol = styled.div`
   .logo-chip {
     width: 76px;
     height: 76px;
-    border-radius: 16px;
+    border-radius: 50%;
     background: #fff;
     border: 1px solid rgba(255, 255, 255, 0.14);
     overflow: hidden;
     display: grid;
     place-items: center;
     margin-bottom: 18px;
-    padding: 5px;
+    padding: 4px;
     img {
       width: 100%;
       height: 100%;
@@ -196,7 +196,7 @@ export default function Footer() {
       <Top>
         <BrandCol>
           <div className="logo-chip">
-            <Image src="/images/rooteco-logo.png" alt="RootEco logo" width={1040} height={780} />
+            <Image src="/images/rooteco-logo.png" alt="RootEco logo" width={1080} height={1058} />
           </div>
           <p>{brand.tagline} Curated corporate gifting, festival hampers and branded merchandise — delivered pan India.</p>
           <Socials>

@@ -103,8 +103,24 @@ const Ghost = styled(Link)`
 const Visual = styled.div`
   position: relative;
   height: 320px;
+  &::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 8px;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 30%, #fffdf7, #f0e5d0);
+    box-shadow: 0 24px 34px rgba(0, 0, 0, 0.3);
+  }
   @media (max-width: 860px) {
     height: 240px;
+    &::before {
+      width: 220px;
+      height: 220px;
+    }
   }
   img {
     object-fit: contain;
