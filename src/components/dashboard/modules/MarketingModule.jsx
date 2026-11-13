@@ -16,13 +16,15 @@ import {
   LoadingBlock,
   Modal,
   PageHeader,
+  Pagination,
+  SearchBox,
   Select,
   Table,
   TableScroll,
   Textarea,
   useToast,
 } from '@/components/dashboard/ui';
-import { apiRequest, formatDate, formatDateTime, formatMoney, useList } from '@/components/dashboard/hooks';
+import { apiRequest, formatDate, formatDateTime, formatMoney, useDebounced, useList } from '@/components/dashboard/hooks';
 import theme from '@/styles/theme';
 
 const EVENT_LABELS = {
@@ -63,12 +65,16 @@ export default function MarketingModule() {
   const [savingTracking, setSavingTracking] = useState(false);
   const [formError, setFormError] = useState('');
 
+  const [couponQ, setCouponQ] = useState('');
+  const [couponPage, setCouponPage] = useState(1);
+  const debouncedCouponQ = useDebounced(couponQ, 320);
   const {
     data: coupons,
+    meta: couponMeta,
     loading: couponsLoading,
     error: couponsError,
     refresh: refreshCoupons,
-  } = useList('/api/marketing/coupons', { pageSize: 50 });
+  } = useList('/api/marketing/coupons', { q: debouncedCouponQ, page: couponPage, pageSize: 20 });
 
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponEditing, setCouponEditing] = useState(null);
@@ -156,6 +162,18 @@ export default function MarketingModule() {
   }
 
   async function saveCoupon() {
+    if (couponForm.value === '' || Number(couponForm.value) <= 0) {
+      setCouponError(
+        couponForm.type === 'percent'
+          ? 'Enter a percentage greater than 0.'
+          : 'Enter a discount amount greater than 0.'
+      );
+      return;
+    }
+    if (couponForm.type === 'percent' && Number(couponForm.value) > 100) {
+      setCouponError('A percentage discount cannot exceed 100%.');
+      return;
+    }
     setCouponSaving(true);
     setCouponError('');
     try {
@@ -179,6 +197,7 @@ export default function MarketingModule() {
       }
       setCouponOpen(false);
       refreshCoupons();
+      refreshStats();
     } catch (err) {
       setCouponError(err.message);
     } finally {
@@ -192,8 +211,18 @@ export default function MarketingModule() {
       await apiRequest(`/api/marketing/coupons/${coupon.id}`, { method: 'DELETE' });
       notify('Coupon deleted.');
       refreshCoupons();
+      refreshStats();
     } catch (err) {
       notify(err.message, 'error');
+    }
+  }
+
+  async function refreshStats() {
+    try {
+      const payload = await apiRequest('/api/marketing');
+      setStats(payload.data);
+    } catch {
+      // Keep the last known counts; the coupon table already shows its own error state.
     }
   }
 
@@ -244,7 +273,7 @@ export default function MarketingModule() {
               <div
                 key={item.label}
                 style={{
-                  background: '#fff',
+                  background: 'var(--re-white)',
                   border: `1px solid ${theme.colors.line}`,
                   borderRadius: 12,
                   padding: '14px 16px',
@@ -260,7 +289,7 @@ export default function MarketingModule() {
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 18, marginBottom: 18 }}>
+          <div className="dash-grid-form" style={{ marginBottom: 18 }}>
             <Card>
               <h2 style={{ fontSize: 16, color: theme.colors.forest, marginBottom: 12 }}>Last 14 days</h2>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 130 }}>
@@ -336,7 +365,7 @@ export default function MarketingModule() {
 
       {formError && <ErrorBlock message={formError} />}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 18 }}>
+      <div className="dash-grid-form" style={{ marginBottom: 18 }}>
         <Card>
           <h2 style={{ fontSize: 16, color: theme.colors.forest, marginBottom: 12 }}>SEO defaults</h2>
           {!seo ? (
@@ -418,16 +447,28 @@ export default function MarketingModule() {
             <h2 style={{ fontSize: 16, color: theme.colors.forest }}>Coupons</h2>
             <p style={{ fontSize: 12, color: theme.colors.muted, marginTop: 2 }}>Codes applied at checkout and validated on the server.</p>
           </div>
-          <Button type="button" onClick={openCreateCoupon}>Add coupon</Button>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginLeft: 'auto' }}>
+            <SearchBox
+              value={couponQ}
+              onChange={(value) => {
+                setCouponQ(value);
+                setCouponPage(1);
+              }}
+              placeholder="Search coupon codes…"
+            />
+            <Button type="button" onClick={openCreateCoupon}>Add coupon</Button>
+          </div>
         </div>
 
-        {couponsError && <ErrorBlock message={couponsError} onRetry={refreshCoupons} />}
-        {couponsLoading ? (
+        {couponsError ? (
+          <ErrorBlock message={couponsError} onRetry={refreshCoupons} />
+        ) : couponsLoading ? (
           <LoadingBlock label="Loading coupons…" />
         ) : coupons.length === 0 ? (
           <EmptyState title="No coupons yet" text="Create a percent or fixed-value code for promotions." />
         ) : (
-          <TableScroll>
+          <>
+            <TableScroll>
             <Table>
               <thead>
                 <tr>
@@ -470,6 +511,8 @@ export default function MarketingModule() {
               </tbody>
             </Table>
           </TableScroll>
+            <Pagination meta={couponMeta} onPage={(next) => setCouponPage(next)} />
+          </>
         )}
       </Card>
 

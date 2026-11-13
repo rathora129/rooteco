@@ -1,4 +1,7 @@
 import LegalPage from '@/components/pages/LegalPage';
+import CmsSections from '@/components/pages/CmsSections';
+import { getPage } from '@/lib/catalog';
+import { visibleSections } from '@/lib/cms';
 
 export const metadata = {
   title: 'Privacy Policy',
@@ -110,15 +113,19 @@ const related = [
   { label: 'Return, Refund & Shipping Policy', href: '/shipping-and-refund-policy' },
 ];
 
-export default function PrivacyPolicyRoute() {
+export default async function PrivacyPolicyRoute() {
+  const page = await getPage('privacy-policy');
   return (
-    <LegalPage
-      title="Privacy Policy"
-      subtitle="What the demo collects, where it lives, and how you stay in control."
-      updated="2 November 2026"
-      intro="RootEco handles gifting programmes for teams, so privacy matters — recipient lists, corporate addresses and personal messages. This page explains exactly what this demonstration site stores, which is mostly in your own browser, and what a live deployment should cover."
-      sections={sections}
-      related={related}
-    />
+    <>
+      <LegalPage
+        title="Privacy Policy"
+        subtitle="What the demo collects, where it lives, and how you stay in control."
+        updated="2 November 2026"
+        intro="RootEco handles gifting programmes for teams, so privacy matters — recipient lists, corporate addresses and personal messages. This page explains exactly what this demonstration site stores, which is mostly in your own browser, and what a live deployment should cover."
+        sections={sections}
+        related={related}
+      />
+      <CmsSections sections={visibleSections(page?.sections)} />
+    </>
   );
 }

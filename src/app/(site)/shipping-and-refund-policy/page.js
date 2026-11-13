@@ -1,4 +1,7 @@
 import LegalPage from '@/components/pages/LegalPage';
+import CmsSections from '@/components/pages/CmsSections';
+import { getPage } from '@/lib/catalog';
+import { visibleSections } from '@/lib/cms';
 
 export const metadata = {
   title: 'Return, Refund & Shipping Policy',
@@ -104,15 +107,19 @@ const related = [
   { label: 'Privacy Policy', href: '/privacy-policy' },
 ];
 
-export default function ShippingRefundRoute() {
+export default async function ShippingRefundRoute() {
+  const page = await getPage('shipping-and-refund-policy');
   return (
-    <LegalPage
-      title="Return, Refund & Shipping Policy"
-      subtitle="How gifting programmes are packed, dispatched, tracked and made right."
-      updated="2 November 2026"
-      intro="Corporate gifting lives or dies on delivery day. This policy describes the coverage, lead times and remedies a RootEco programme is designed around — and clearly marks which parts are simulated in this demonstration storefront."
-      sections={sections}
-      related={related}
-    />
+    <>
+      <LegalPage
+        title="Return, Refund & Shipping Policy"
+        subtitle="How gifting programmes are packed, dispatched, tracked and made right."
+        updated="2 November 2026"
+        intro="Corporate gifting lives or dies on delivery day. This policy describes the coverage, lead times and remedies a RootEco programme is designed around — and clearly marks which parts are simulated in this demonstration storefront."
+        sections={sections}
+        related={related}
+      />
+      <CmsSections sections={visibleSections(page?.sections)} />
+    </>
   );
 }

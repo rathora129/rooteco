@@ -11,7 +11,9 @@ function Thumb({ src, alt, size = 40 }) {
     <img
       src={src}
       alt={alt || ''}
-      style={{ width: size, height: size, borderRadius: 8, objectFit: 'cover', border: '1px solid #E3DCCB' }}
+      loading="lazy"
+      decoding="async"
+      style={{ width: size, height: size, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--re-line)' }}
     />
   ) : (
     <span
@@ -21,8 +23,8 @@ function Thumb({ src, alt, size = 40 }) {
         width: size,
         height: size,
         borderRadius: 8,
-        background: '#F6F1E7',
-        color: '#5C6B62',
+        background: 'rgba(255, 255, 255, 0.05)',
+        color: 'var(--re-muted)',
         fontSize: 10,
       }}
     >
@@ -117,7 +119,7 @@ export function ProductsModule() {
         {
           key: 'image',
           label: '',
-          width: 54,
+          width: 68,
           render: (row) => <Thumb src={row.images?.[0]} alt={row.name} />,
         },
         {
@@ -273,7 +275,7 @@ export function CategoriesModule() {
         {
           key: 'image',
           label: '',
-          width: 54,
+          width: 68,
           render: (row) => <Thumb src={row.image} alt={row.name} />,
         },
         {
@@ -352,7 +354,7 @@ export function CollectionsModule() {
         {
           key: 'image',
           label: '',
-          width: 54,
+          width: 68,
           render: (row) => <Thumb src={row.image} alt={row.name} />,
         },
         { key: 'name', label: 'Collection', render: (row) => <span className="strong">{row.name}</span> },

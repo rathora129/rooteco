@@ -1,4 +1,7 @@
 import LegalPage from '@/components/pages/LegalPage';
+import CmsSections from '@/components/pages/CmsSections';
+import { getPage } from '@/lib/catalog';
+import { visibleSections } from '@/lib/cms';
 
 export const metadata = {
   title: 'Terms & Conditions',
@@ -121,15 +124,19 @@ const related = [
   { label: 'Return, Refund & Shipping Policy', href: '/shipping-and-refund-policy' },
 ];
 
-export default function TermsRoute() {
+export default async function TermsRoute() {
+  const page = await getPage('terms-and-conditions');
   return (
-    <LegalPage
-      title="Terms & Conditions"
-      subtitle="The ground rules for using this demo storefront and requesting a gifting programme."
-      updated="2 November 2026"
-      intro="These terms set out how the RootEco demo storefront may be used and how a real corporate gifting engagement would be structured — from quotation and sample approval to production and delivery. Because this is a demonstration build, nothing here creates a binding commercial contract."
-      sections={sections}
-      related={related}
-    />
+    <>
+      <LegalPage
+        title="Terms & Conditions"
+        subtitle="The ground rules for using this demo storefront and requesting a gifting programme."
+        updated="2 November 2026"
+        intro="These terms set out how the RootEco demo storefront may be used and how a real corporate gifting engagement would be structured — from quotation and sample approval to production and delivery. Because this is a demonstration build, nothing here creates a binding commercial contract."
+        sections={sections}
+        related={related}
+      />
+      <CmsSections sections={visibleSections(page?.sections)} />
+    </>
   );
 }

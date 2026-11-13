@@ -128,8 +128,9 @@ export default function OrdersModule() {
           </Select>
         </Toolbar>
 
-        {error && <ErrorBlock message={error} onRetry={refresh} />}
-        {loading ? (
+        {error ? (
+          <ErrorBlock message={error} onRetry={refresh} />
+        ) : loading ? (
           <LoadingBlock label="Loading orders…" />
         ) : data.length === 0 ? (
           <EmptyState title="No orders found" text="New storefront orders will appear here as soon as a customer checks out." />
@@ -198,7 +199,7 @@ export default function OrdersModule() {
           <>
             {formError && <ErrorBlock message={formError} />}
             {detailLoading && <LoadingBlock label="Loading order history…" />}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 20 }}>
+            <div className="dash-grid-form" style={{ gap: 20 }}>
               <div>
                 <h3 style={{ fontSize: 17, color: theme.colors.forest, marginBottom: 10 }}>Items</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -209,7 +210,7 @@ export default function OrdersModule() {
                         display: 'flex',
                         gap: 10,
                         alignItems: 'center',
-                        background: '#fff',
+                        background: 'var(--re-white)',
                         border: `1px solid ${theme.colors.line}`,
                         borderRadius: 10,
                         padding: 10,
@@ -231,7 +232,7 @@ export default function OrdersModule() {
                   ))}
                 </div>
 
-                <div style={{ marginTop: 16, background: '#fff', border: `1px solid ${theme.colors.line}`, borderRadius: 10, padding: 14, fontSize: 12.5 }}>
+                <div style={{ marginTop: 16, background: 'var(--re-white)', border: `1px solid ${theme.colors.line}`, borderRadius: 10, padding: 14, fontSize: 12.5 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
                     <span style={{ color: theme.colors.muted }}>Subtotal</span>
                     <span>{formatMoney(active.subtotal)}</span>
@@ -252,7 +253,7 @@ export default function OrdersModule() {
                   </div>
                 </div>
 
-                <div style={{ marginTop: 16, background: '#fff', border: `1px solid ${theme.colors.line}`, borderRadius: 10, padding: 14, fontSize: 12.5, lineHeight: 1.7 }}>
+                <div style={{ marginTop: 16, background: 'var(--re-white)', border: `1px solid ${theme.colors.line}`, borderRadius: 10, padding: 14, fontSize: 12.5, lineHeight: 1.7 }}>
                   <h3 style={{ fontSize: 14, color: theme.colors.forest, marginBottom: 6 }}>Shipping address</h3>
                   <div><strong>{active.customerName}</strong>{active.company ? ` · ${active.company}` : ''}</div>
                   <div>{active.addressLine1}{active.addressLine2 ? `, ${active.addressLine2}` : ''}</div>

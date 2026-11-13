@@ -1,5 +1,7 @@
 import AboutPage from '@/components/pages/AboutPage';
+import CmsSections from '@/components/pages/CmsSections';
 import { getPage } from '@/lib/catalog';
+import { visibleSections } from '@/lib/cms';
 import { getSettings } from '@/lib/settings';
 import { absoluteUrl } from '@/lib/seo';
 
@@ -14,6 +16,12 @@ export async function generateMetadata() {
   };
 }
 
-export default function AboutRoute() {
-  return <AboutPage />;
+export default async function AboutRoute() {
+  const page = await getPage('about');
+  return (
+    <>
+      <AboutPage />
+      <CmsSections sections={visibleSections(page?.sections)} />
+    </>
+  );
 }

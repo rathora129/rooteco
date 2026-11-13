@@ -56,7 +56,8 @@ export default function SettingsModule() {
         method: 'PUT',
         body: JSON.stringify({ [tab]: draft[tab] }),
       });
-      setDraft(response.data);
+      // Merge only the saved group so unsaved edits in other tabs are preserved.
+      setDraft((prev) => (prev ? { ...prev, [tab]: response.data[tab] } : response.data));
       setSavedAt(new Date());
       notify(`${TABS.find((item) => item.id === tab)?.label || 'Settings'} saved.`);
     } catch (err) {
@@ -96,7 +97,7 @@ export default function SettingsModule() {
           </p>
         </div>
         <Button type="button" onClick={save} disabled={saving}>
-          {saving ? 'Saving…' : 'Save changes'}
+          {saving ? 'Saving…' : `Save ${TABS.find((item) => item.id === tab)?.label || 'changes'}`}
         </Button>
       </PageHeader>
 
@@ -109,6 +110,7 @@ export default function SettingsModule() {
             onClick={() => {
               setTab(item.id);
               setFormError('');
+              setSavedAt(null);
             }}
             style={{ padding: '7px 14px', fontSize: 12.5 }}
           >

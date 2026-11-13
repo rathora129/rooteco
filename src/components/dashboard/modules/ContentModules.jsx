@@ -12,12 +12,14 @@ function Thumb({ src, alt, wide = false }) {
     <img
       src={src}
       alt={alt || ''}
+      loading="lazy"
+      decoding="async"
       style={{
         width: wide ? 84 : 40,
         height: 40,
         borderRadius: 7,
         objectFit: 'cover',
-        border: '1px solid #E3DCCB',
+        border: '1px solid var(--re-line)',
       }}
     />
   ) : (
@@ -28,8 +30,8 @@ function Thumb({ src, alt, wide = false }) {
         width: wide ? 84 : 40,
         height: 40,
         borderRadius: 7,
-        background: '#F6F1E7',
-        color: '#5C6B62',
+        background: 'rgba(255, 255, 255, 0.05)',
+        color: 'var(--re-muted)',
         fontSize: 10,
       }}
     >
@@ -91,6 +93,26 @@ export function PagesModule() {
         },
       ]}
       fields={fields}
+      rowActions={(row) => (
+        <Link
+          href={`/dashboard/pages/${row.id}`}
+          title="Open page builder"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: '6px 10px',
+            borderRadius: 8,
+            border: `1px solid ${theme.colors.line}`,
+            background: 'rgba(240, 162, 59, 0.1)',
+            color: theme.colors.ink,
+            fontSize: 12,
+            fontWeight: 600,
+          }}
+        >
+          Build
+        </Link>
+      )}
       defaults={{ status: 'published', sections: [] }}
       filters={[{ name: 'status', label: 'All statuses', options: STATUS_OPTIONS }]}
       searchPlaceholder="Search pages…"
@@ -216,7 +238,7 @@ export function BlogsModule() {
         {
           key: 'image',
           label: '',
-          width: 54,
+          width: 68,
           render: (row) => <Thumb src={row.image} alt={row.title} />,
         },
         {

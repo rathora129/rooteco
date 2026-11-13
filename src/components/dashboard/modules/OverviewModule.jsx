@@ -22,7 +22,7 @@ function StatCard({ label, value, hint, href }) {
   const inner = (
     <div
       style={{
-        background: '#fff',
+        background: 'var(--re-white)',
         border: `1px solid ${theme.colors.line}`,
         borderRadius: 14,
         padding: '16px 18px',
@@ -140,7 +140,7 @@ export default function OverviewModule() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.35fr 0.65fr', gap: 18, marginBottom: 18 }}>
+          <div className="dash-grid-split" style={{ marginBottom: 18 }}>
             <Card>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <h2 style={{ fontSize: 16, color: theme.colors.forest }}>Order value · last 14 days</h2>
@@ -156,7 +156,7 @@ export default function OverviewModule() {
                     <div
                       style={{
                         height: `${Math.max(4, (Number(point.value) / maxRevenue) * 100)}px`,
-                        background: Number(point.value) ? theme.colors.forest : theme.colors.creamDark,
+                        background: Number(point.value) ? theme.colors.green : theme.colors.track,
                         borderRadius: 4,
                       }}
                     />
@@ -183,7 +183,7 @@ export default function OverviewModule() {
                         <span style={{ textTransform: 'capitalize' }}>{row.status}</span>
                         <strong>{row.count}</strong>
                       </div>
-                      <div style={{ height: 7, background: theme.colors.creamDark, borderRadius: 999 }}>
+                      <div style={{ height: 7, background: theme.colors.track, borderRadius: 999 }}>
                         <div
                           style={{
                             width: `${Math.max(4, (row.count / pipelineTotal) * 100)}%`,
@@ -203,7 +203,7 @@ export default function OverviewModule() {
             </Card>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr', gap: 18, marginBottom: 18 }}>
+          <div className="dash-grid-main" style={{ marginBottom: 18 }}>
             <Card>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <h2 style={{ fontSize: 16, color: theme.colors.forest }}>Recent orders</h2>
@@ -257,7 +257,7 @@ export default function OverviewModule() {
                     <div
                       key={item.id}
                       style={{
-                        background: '#fff',
+                        background: 'var(--re-white)',
                         border: `1px solid ${theme.colors.line}`,
                         borderRadius: 10,
                         padding: 10,
@@ -279,7 +279,7 @@ export default function OverviewModule() {
             </Card>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18 }}>
+          <div className="dash-grid-thirds">
             <Card>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <h2 style={{ fontSize: 15, color: theme.colors.forest }}>Latest quotes</h2>

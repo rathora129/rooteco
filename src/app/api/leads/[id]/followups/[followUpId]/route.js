@@ -36,6 +36,12 @@ export const PATCH = handleRoute(async (request, context) => {
   const body = await readJson(request);
   const data = followUpSchema.partial().parse(body);
 
+  const existing = await prisma.followUp.findFirst({
+    where: { id: followUpId, leadId: id },
+    select: { id: true },
+  });
+  if (!existing) throw new ApiError(404, 'Follow-up not found.');
+
   const followUp = await prisma.followUp.update({
     where: { id: followUpId },
     data,
@@ -45,7 +51,12 @@ export const PATCH = handleRoute(async (request, context) => {
 
 export const DELETE = handleRoute(async (request, context) => {
   await requireOwner();
-  const { followUpId } = await context.params;
+  const { id, followUpId } = await context.params;
+  const existing = await prisma.followUp.findFirst({
+    where: { id: followUpId, leadId: id },
+    select: { id: true },
+  });
+  if (!existing) throw new ApiError(404, 'Follow-up not found.');
   await prisma.followUp.delete({ where: { id: followUpId } });
   return apiSuccess({ id: followUpId });
 });

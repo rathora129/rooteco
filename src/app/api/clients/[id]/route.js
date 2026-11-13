@@ -11,12 +11,13 @@ export const GET = handleRoute(async (request, context) => {
   const client = await prisma.client.findUnique({
     where: { id },
     include: {
-      leads: { orderBy: { createdAt: 'desc' }, include: { followUps: { orderBy: { dueDate: 'desc' } } } },
+      leads: { orderBy: { createdAt: 'desc' }, take: 50, include: { followUps: { orderBy: { dueDate: 'desc' } } } },
       quotes: {
         orderBy: { createdAt: 'desc' },
+        take: 50,
         include: { order: { select: { id: true, number: true, status: true } } },
       },
-      orders: { orderBy: { createdAt: 'desc' }, include: { items: true } },
+      orders: { orderBy: { createdAt: 'desc' }, take: 50, include: { items: true } },
       whatsappMessages: { orderBy: { createdAt: 'desc' }, take: 50 },
       _count: { select: { leads: true, quotes: true, orders: true, whatsappMessages: true } },
     },

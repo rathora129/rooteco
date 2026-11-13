@@ -44,7 +44,7 @@ export function useDebounced(value, delay = 300) {
   return debounced;
 }
 
-export function useList(endpoint, { q = '', page = 1, pageSize = 20, filters = {}, sort = '', order = '' } = {}) {
+export function useList(endpoint, { q = '', page = 1, pageSize = 20, filters = {}, sort = '', order = '', enabled = true } = {}) {
   const [data, setData] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -54,6 +54,7 @@ export function useList(endpoint, { q = '', page = 1, pageSize = 20, filters = {
   const query = buildQuery({ q, page, pageSize, sort, order, ...filters });
 
   useEffect(() => {
+    if (!enabled) return undefined;
     let active = true;
     setLoading(true);
     setError('');
@@ -75,7 +76,7 @@ export function useList(endpoint, { q = '', page = 1, pageSize = 20, filters = {
     return () => {
       active = false;
     };
-  }, [endpoint, query, refreshKey]);
+  }, [endpoint, query, refreshKey, enabled]);
 
   const refresh = useCallback(() => setRefreshKey((key) => key + 1), []);
 

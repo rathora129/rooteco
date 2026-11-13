@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { getPage } from '@/lib/catalog';
+import { visibleSections } from '@/lib/cms';
 import { getSettings } from '@/lib/settings';
 import { absoluteUrl } from '@/lib/seo';
 import CmsPage from '@/components/pages/CmsPage';
@@ -8,6 +9,13 @@ const BUILT_IN_REDIRECTS = {
   home: '/',
   about: '/about',
   contact: '/contact',
+  faq: '/faq',
+  blog: '/blog',
+  collections: '/collections',
+  'wall-of-love': '/wall-of-love',
+  'privacy-policy': '/privacy-policy',
+  'terms-and-conditions': '/terms-and-conditions',
+  'shipping-and-refund-policy': '/shipping-and-refund-policy',
 };
 
 export async function generateMetadata({ params }) {
@@ -32,5 +40,5 @@ export default async function CmsPageRoute({ params }) {
   if (BUILT_IN_REDIRECTS[slug]) redirect(BUILT_IN_REDIRECTS[slug]);
   const page = await getPage(slug);
   if (!page) notFound();
-  return <CmsPage page={page} />;
+  return <CmsPage page={{ ...page, sections: visibleSections(page.sections) }} />;
 }

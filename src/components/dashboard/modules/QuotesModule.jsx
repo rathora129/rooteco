@@ -170,6 +170,26 @@ export default function QuotesModule() {
       setConverted(response.data);
       notify(`Order ${response.data.number} created from quote.`);
       refresh();
+      const detail = await apiRequest(`/api/quotes/${active.id}`);
+      setActive(detail.data);
+      setEdit(initialEdit(detail.data));
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteQuote() {
+    if (!active) return;
+    if (!window.confirm(`Delete the quote request from “${active.name}”? This cannot be undone.`)) return;
+    setSaving(true);
+    setFormError('');
+    try {
+      await apiRequest(`/api/quotes/${active.id}`, { method: 'DELETE' });
+      notify('Quote deleted.');
+      closeModal();
+      refresh();
     } catch (err) {
       setFormError(err.message);
     } finally {
@@ -217,8 +237,9 @@ export default function QuotesModule() {
           </Select>
         </Toolbar>
 
-        {error && <ErrorBlock message={error} onRetry={refresh} />}
-        {loading ? (
+        {error ? (
+          <ErrorBlock message={error} onRetry={refresh} />
+        ) : loading ? (
           <LoadingBlock label="Loading quotes…" />
         ) : data.length === 0 ? (
           <EmptyState
@@ -311,6 +332,9 @@ export default function QuotesModule() {
             </>
           ) : (
             <>
+              <Button type="button" $variant="danger" onClick={deleteQuote} disabled={saving || detailLoading}>
+                Delete quote
+              </Button>
               <Button type="button" $variant="outline" onClick={closeModal}>Close</Button>
               <Button type="button" onClick={save} disabled={saving || !edit}>
                 {saving ? 'Saving…' : 'Save changes'}
@@ -323,11 +347,11 @@ export default function QuotesModule() {
           <>
             {formError && <ErrorBlock message={formError} />}
             {detailLoading && <LoadingBlock label="Loading quote history…" />}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: 20 }}>
+            <div className="dash-grid-form" style={{ gap: 20 }}>
               <div>
                 <div
                   style={{
-                    background: '#fff',
+                    background: 'var(--re-white)',
                     border: `1px solid ${theme.colors.line}`,
                     borderRadius: 10,
                     padding: 14,
@@ -362,7 +386,7 @@ export default function QuotesModule() {
                 <div
                   style={{
                     marginTop: 14,
-                    background: '#fff',
+                    background: 'var(--re-white)',
                     border: `1px solid ${theme.colors.line}`,
                     borderRadius: 10,
                     padding: 14,
@@ -509,7 +533,7 @@ export default function QuotesModule() {
             {converted ? (
               <div
                 style={{
-                  background: '#fff',
+                  background: 'var(--re-white)',
                   border: `1px solid ${theme.colors.line}`,
                   borderRadius: 12,
                   padding: 20,

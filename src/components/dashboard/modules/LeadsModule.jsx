@@ -92,7 +92,7 @@ export default function LeadsModule() {
     loading: clientsLoading,
     error: clientsError,
     refresh: refreshClients,
-  } = useList('/api/clients', { q: debouncedClientQ, page: clientPage, pageSize: 20 });
+  } = useList('/api/clients', { q: debouncedClientQ, page: clientPage, pageSize: 20, enabled: tab === 'clients' });
 
   const [createLeadOpen, setCreateLeadOpen] = useState(false);
   const [leadForm, setLeadForm] = useState(emptyLead);
@@ -215,6 +215,24 @@ export default function LeadsModule() {
     }
   }
 
+  async function deleteLead() {
+    if (!active) return;
+    if (!window.confirm(`Delete lead “${active.name}”? This cannot be undone.`)) return;
+    setSaving(true);
+    setDetailError('');
+    try {
+      await apiRequest(`/api/leads/${active.id}`, { method: 'DELETE' });
+      notify('Lead deleted.');
+      setActive(null);
+      refresh();
+      refreshClients();
+    } catch (err) {
+      setDetailError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function createLead() {
     setCreating(true);
     setCreateError('');
@@ -253,6 +271,7 @@ export default function LeadsModule() {
   const exportHref = `/api/leads/export${buildQuery({
     q: debouncedQ,
     status,
+    source,
     due: dueOnly ? 'true' : '',
   })}`;
 
@@ -355,8 +374,9 @@ export default function LeadsModule() {
             </Button>
           </Toolbar>
 
-          {error && <ErrorBlock message={error} onRetry={refresh} />}
-          {loading ? (
+          {error ? (
+            <ErrorBlock message={error} onRetry={refresh} />
+          ) : loading ? (
             <LoadingBlock label="Loading leads…" />
           ) : leads.length === 0 ? (
             <EmptyState
@@ -593,6 +613,9 @@ export default function LeadsModule() {
         wide
         footer={
           <>
+            <Button type="button" $variant="danger" onClick={deleteLead} disabled={saving || detailLoading}>
+              Delete lead
+            </Button>
             <Button type="button" $variant="outline" onClick={() => setActive(null)}>Close</Button>
             <Button type="button" onClick={saveLead} disabled={saving || detailLoading}>
               {saving ? 'Saving…' : 'Save changes'}
@@ -605,11 +628,11 @@ export default function LeadsModule() {
           <LoadingBlock label="Loading lead…" />
         ) : (
           active && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: 20 }}>
+            <div className="dash-grid-form" style={{ gap: 20 }}>
               <div>
                 <div
                   style={{
-                    background: '#fff',
+                    background: 'var(--re-white)',
                     border: `1px solid ${theme.colors.line}`,
                     borderRadius: 10,
                     padding: 14,
@@ -636,12 +659,19 @@ export default function LeadsModule() {
                   )}
                   <div style={{ marginTop: 10 }}>
                     {active.client ? (
-                      <Link
-                        href={`/dashboard/clients/${active.client.id}`}
-                        style={{ color: theme.colors.forest, fontWeight: 600 }}
-                      >
-                        View client record →
-                      </Link>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                        <Link
+                          href={`/dashboard/clients/${active.client.id}`}
+                          style={{ color: theme.colors.forest, fontWeight: 600 }}
+                        >
+                          View client record →
+                        </Link>
+                        {active.status !== 'won' && (
+                          <Button type="button" $variant="outline" onClick={convertLead} disabled={saving}>
+                            Mark won
+                          </Button>
+                        )}
+                      </div>
                     ) : (
                       <Button type="button" $variant="outline" onClick={convertLead} disabled={saving}>
                         Convert to client
@@ -661,7 +691,7 @@ export default function LeadsModule() {
                     <div
                       key={item.id}
                       style={{
-                        background: '#fff',
+                        background: 'var(--re-white)',
                         border: `1px solid ${theme.colors.line}`,
                         borderRadius: 10,
                         padding: 10,
@@ -701,7 +731,7 @@ export default function LeadsModule() {
                   ))}
                 </div>
 
-                <div style={{ marginTop: 12, background: '#fff', border: `1px solid ${theme.colors.line}`, borderRadius: 10, padding: 12 }}>
+                <div style={{ marginTop: 12, background: 'var(--re-white)', border: `1px solid ${theme.colors.line}`, borderRadius: 10, padding: 12 }}>
                   <h4 style={{ fontSize: 12.5, marginBottom: 8 }}>Schedule follow-up</h4>
                   <FormGrid $cols={1}>
                     <Field label="Due date" required>
@@ -736,7 +766,7 @@ export default function LeadsModule() {
                       <div
                         key={quote.id}
                         style={{
-                          background: '#fff',
+                          background: 'var(--re-white)',
                           border: `1px solid ${theme.colors.line}`,
                           borderRadius: 10,
                           padding: 10,

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Badge,
   Button,
@@ -26,6 +27,7 @@ import theme from '@/styles/theme';
 
 export default function ClientDetail({ clientId }) {
   const { notify } = useToast();
+  const router = useRouter();
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -79,6 +81,22 @@ export default function ClientDetail({ clientId }) {
       notify('Client updated.');
     } catch (err) {
       setFormError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeClient() {
+    if (!client) return;
+    if (!window.confirm(`Delete client “${client.name}”? Their leads and quotes stay, but will no longer be linked. This cannot be undone.`)) return;
+    setSaving(true);
+    setFormError('');
+    try {
+      await apiRequest(`/api/clients/${clientId}`, { method: 'DELETE' });
+      notify('Client deleted.');
+      router.push('/dashboard/leads');
+    } catch (err) {
+      notify(err.message, 'error');
     } finally {
       setSaving(false);
     }
@@ -142,6 +160,7 @@ export default function ClientDetail({ clientId }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <Button as={Link} href="/dashboard/leads" $variant="outline">Back to leads</Button>
+          <Button type="button" $variant="outline" onClick={removeClient} disabled={saving}>Delete client</Button>
           <Button type="button" onClick={openEdit}>Edit client</Button>
         </div>
       </PageHeader>
@@ -158,7 +177,7 @@ export default function ClientDetail({ clientId }) {
           <div
             key={stat.label}
             style={{
-              background: '#fff',
+              background: 'var(--re-white)',
               border: `1px solid ${theme.colors.line}`,
               borderRadius: 12,
               padding: '14px 16px',
@@ -174,7 +193,7 @@ export default function ClientDetail({ clientId }) {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '0.85fr 1.15fr', gap: 18, alignItems: 'start' }}>
+      <div className="dash-grid-form" style={{ gap: 18 }}>
         <Card>
           <h2 style={{ fontSize: 16, color: theme.colors.forest, marginBottom: 12 }}>Contact</h2>
           <div style={{ fontSize: 13, lineHeight: 1.9 }}>
@@ -244,7 +263,7 @@ export default function ClientDetail({ clientId }) {
                 <div
                   key={quote.id}
                   style={{
-                    background: '#fff',
+                    background: 'var(--re-white)',
                     border: `1px solid ${theme.colors.line}`,
                     borderRadius: 10,
                     padding: 10,
@@ -279,7 +298,7 @@ export default function ClientDetail({ clientId }) {
                 <div
                   key={lead.id}
                   style={{
-                    background: '#fff',
+                    background: 'var(--re-white)',
                     border: `1px solid ${theme.colors.line}`,
                     borderRadius: 10,
                     padding: 10,
@@ -314,8 +333,8 @@ export default function ClientDetail({ clientId }) {
                 <div
                   key={message.id}
                   style={{
-                    alignSelf: message.direction === 'outgoing' ? 'flex-end' : 'flex-start',
-                    background: message.direction === 'outgoing' ? '#e4efdc' : '#fff',
+                    alignSelf: message.direction === 'outbound' ? 'flex-end' : 'flex-start',
+                    background: message.direction === 'outbound' ? 'rgba(240, 162, 59, 0.14)' : 'var(--re-white)',
                     border: `1px solid ${theme.colors.line}`,
                     borderRadius: 10,
                     padding: '8px 12px',

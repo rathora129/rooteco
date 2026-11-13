@@ -72,7 +72,9 @@ const Side = styled.aside`
     background: ${theme.colors.line};
     border-radius: 999px;
   }
-  background: #fff;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
   border: 1px solid ${theme.colors.line};
   border-radius: ${theme.radius.md};
   padding: 22px 20px;
@@ -373,8 +375,8 @@ const Chips = styled.div`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 22px;
   @media (max-width: 640px) {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import prisma from '@/lib/prisma';
 
 const decimalToNumber = (value) => (value == null ? null : Number(value));
@@ -222,7 +223,7 @@ export async function getRelatedProducts(product, limit = 6) {
   return same;
 }
 
-export async function getCategories() {
+export const getCategories = cache(async () => {
   const records = await prisma.category.findMany({
     where: { status: 'published', parentId: null },
     include: {
@@ -235,7 +236,7 @@ export async function getCategories() {
     orderBy: [{ order: 'asc' }, { name: 'asc' }],
   });
   return records.map((record) => mapCategory(record, record.children));
-}
+});
 
 export async function getAllCategories() {
   const records = await prisma.category.findMany({
@@ -323,13 +324,13 @@ export async function getFaqs(limit) {
   return records.map(mapFaq);
 }
 
-export async function getPage(slug) {
+export const getPage = cache(async function getPage(slug) {
   if (!slug) return null;
   return prisma.page.findFirst({
     where: { slug, status: 'published' },
     include: { sections: { orderBy: { order: 'asc' } } },
   });
-}
+});
 
 export async function getBlogs(limit) {
   return prisma.blog.findMany({

@@ -30,7 +30,7 @@ const Grid = styled.div`
 `;
 
 const Tile = styled.div`
-  background: #fff;
+  background: var(--re-white);
   border: 1px solid ${theme.colors.line};
   border-radius: 12px;
   overflow: hidden;
@@ -38,9 +38,20 @@ const Tile = styled.div`
     display: block;
     width: 100%;
     aspect-ratio: 4 / 3;
-    background: ${theme.colors.cream} center / cover no-repeat;
+    background: ${theme.colors.cream};
     border-bottom: 1px solid ${theme.colors.line};
     cursor: zoom-in;
+    padding: 0;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    overflow: hidden;
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
   .meta {
     padding: 9px 11px;
@@ -82,6 +93,15 @@ function prettySize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+// Cloudinary can serve a resized derivative; other providers fall back to the original file.
+function thumbUrl(url, width = 480) {
+  if (!url) return url;
+  if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
+    return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`);
+  }
+  return url;
 }
 
 export default function MediaModule() {
@@ -184,8 +204,9 @@ export default function MediaModule() {
         <Toolbar>
           <SearchBox value={q} onChange={(value) => { setQ(value); setPage(1); }} placeholder="Search by filename or alt text…" />
         </Toolbar>
-        {error && <ErrorBlock message={error} onRetry={refresh} />}
-        {loading ? (
+        {error ? (
+          <ErrorBlock message={error} onRetry={refresh} />
+        ) : loading ? (
           <LoadingBlock label="Loading media…" />
         ) : data.length === 0 ? (
           <EmptyState
@@ -201,10 +222,16 @@ export default function MediaModule() {
                   <button
                     type="button"
                     className="thumb"
-                    style={{ backgroundImage: `url(${item.url})`, border: 0, padding: 0 }}
                     onClick={() => openPreview(item)}
                     aria-label={`Preview ${item.filename || 'image'}`}
-                  />
+                  >
+                    <img
+                      src={thumbUrl(item.url)}
+                      alt={item.alt || item.filename || ''}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </button>
                   <div className="meta">
                     <div className="name" title={item.filename || item.url}>
                       {item.filename || 'Untitled image'}

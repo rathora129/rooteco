@@ -14,7 +14,7 @@ const Page = styled.div`
   grid-template-columns: 1.05fr 1fr;
   background: ${theme.colors.cream};
   @media (max-width: 960px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 `;
 
@@ -133,11 +133,13 @@ const FormSide = styled.section`
   display: grid;
   place-items: center;
   padding: 44px 24px;
+  min-width: 0;
 `;
 
 const Card = styled.div`
   width: 100%;
   max-width: 400px;
+  min-width: 0;
   .mobile-brand {
     display: none;
     justify-content: center;
@@ -285,6 +287,7 @@ const Foot = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 14px;
   margin-top: 26px;
   padding-top: 20px;

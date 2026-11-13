@@ -23,8 +23,9 @@ const Header = styled.header`
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(253, 252, 248, 0.92);
-  backdrop-filter: blur(12px);
+  background: rgba(253, 252, 248, 0.82);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
   border-bottom: 1px solid ${theme.colors.line};
   transition: box-shadow 0.3s ease;
   &.scrolled {
@@ -329,7 +330,7 @@ export default function Navbar({
         <Inner>
           <Logo href="/" aria-label="RootEco home">
             <span className="chip">
-              <Image src={logoUrl} alt="RootEco logo" width={1080} height={1058} />
+              <Image src={logoUrl} alt="RootEco logo" width={1080} height={1058} sizes="56px" priority />
             </span>
           </Logo>
 
@@ -419,7 +420,7 @@ export default function Navbar({
           <div className="top">
             <Logo href="/">
               <span className="chip">
-                <Image src={logoUrl} alt="RootEco logo" width={1080} height={1058} />
+                <Image src={logoUrl} alt="RootEco logo" width={1080} height={1058} sizes="48px" />
               </span>
             </Logo>
             <MobileToggle onClick={() => setMobileOpen(false)} aria-label="Close menu">

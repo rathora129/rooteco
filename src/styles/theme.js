@@ -1,19 +1,25 @@
 // RootEco design tokens — palette extracted from the official logo.
+// Colors resolve from CSS variables so the storefront keeps its light brand
+// palette while the owner dashboard can run a dark, premium workspace.
 const theme = {
   colors: {
-    forest: '#0B3D2E',
-    emerald: '#10513C',
-    green: '#4C7A34',
-    leaf: '#7CB342',
-    cream: '#F6F1E7',
-    creamDark: '#EDE5D3',
-    white: '#FDFCF8',
-    gold: '#C9A227',
-    goldLight: '#E3C766',
-    ink: '#15221B',
-    muted: '#5C6B62',
-    line: '#E3DCCB',
-    sale: '#B3402A',
+    forest: 'var(--re-forest)',
+    emerald: 'var(--re-emerald)',
+    green: 'var(--re-green)',
+    leaf: 'var(--re-leaf)',
+    cream: 'var(--re-cream)',
+    creamDark: 'var(--re-cream-dark)',
+    track: 'var(--re-track)',
+    white: 'var(--re-white)',
+    gold: 'var(--re-gold)',
+    goldLight: 'var(--re-gold-light)',
+    ink: 'var(--re-ink)',
+    muted: 'var(--re-muted)',
+    line: 'var(--re-line)',
+    sale: 'var(--re-sale)',
+    accent: 'var(--re-accent)',
+    accentInk: 'var(--re-accent-ink)',
+    sidebar: 'var(--re-sidebar)',
   },
   fonts: {
     display: 'var(--font-display), Georgia, serif',

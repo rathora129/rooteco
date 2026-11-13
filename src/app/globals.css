@@ -1,3 +1,86 @@
+:root {
+  --re-forest: #0b3d2e;
+  --re-emerald: #10513c;
+  --re-green: #4c7a34;
+  --re-leaf: #7cb342;
+  --re-cream: #f6f1e7;
+  --re-cream-dark: #ede5d3;
+  --re-track: #e6dfcf;
+  --re-white: #fdfcf8;
+  --re-gold: #c9a227;
+  --re-gold-light: #e3c766;
+  --re-ink: #15221b;
+  --re-muted: #5c6b62;
+  --re-line: #e3dccb;
+  --re-sale: #b3402a;
+  --re-accent: #c9a227;
+  --re-accent-ink: #0b3d2e;
+  --re-sidebar: #0b3d2e;
+}
+
+/* Owner workspace: dark premium surfaces, warm orange accent. */
+/* Responsive dashboard layouts used by modules that used to hard-code columns. */
+.dash-grid-split,
+.dash-grid-main,
+.dash-grid-thirds,
+.dash-grid-form {
+  display: grid;
+  gap: 18px;
+}
+.dash-grid-split > *,
+.dash-grid-main > *,
+.dash-grid-thirds > *,
+.dash-grid-form > * {
+  min-width: 0;
+}
+.dash-grid-split {
+  grid-template-columns: 1.35fr 0.65fr;
+}
+.dash-grid-main {
+  grid-template-columns: 1.3fr 0.7fr;
+}
+.dash-grid-thirds {
+  grid-template-columns: repeat(3, 1fr);
+}
+.dash-grid-form {
+  grid-template-columns: 1.2fr 0.8fr;
+  align-items: start;
+}
+@media (max-width: 1180px) {
+  .dash-grid-thirds {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 960px) {
+  .dash-grid-split,
+  .dash-grid-main,
+  .dash-grid-thirds,
+  .dash-grid-form {
+    grid-template-columns: 1fr;
+  }
+}
+.dashboard-theme {
+  --re-forest: #f4f0e6;
+  --re-emerald: #223029;
+  --re-green: #f0a23b;
+  --re-leaf: #f0a23b;
+  --re-cream: #0f1512;
+  --re-cream-dark: #232d27;
+  --re-track: rgba(233, 229, 218, 0.16);
+  --re-white: #18201c;
+  --re-gold: #f0a23b;
+  --re-gold-light: #ffc978;
+  --re-ink: #e9e5da;
+  --re-muted: #9aa79f;
+  --re-line: rgba(255, 255, 255, 0.1);
+  --re-sale: #ff8170;
+  --re-accent: #f0a23b;
+  --re-accent-ink: #1a1408;
+  --re-sidebar: #0a100d;
+  color: var(--re-ink);
+  color-scheme: dark;
+}
+
 html {
   height: 100%;
   scroll-behavior: smooth;

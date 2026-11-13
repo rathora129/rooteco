@@ -10,7 +10,7 @@ import theme from '@/styles/theme';
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
   gap: 22px;
   @media (max-width: 640px) {
     grid-template-columns: repeat(2, 1fr);

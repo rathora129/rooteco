@@ -28,11 +28,11 @@ export const PageHeader = styled.div`
   margin-bottom: 24px;
   .eyebrow {
     display: block;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: ${theme.colors.green};
+    color: ${theme.colors.accent};
     margin-bottom: 6px;
   }
   h1 {
@@ -54,11 +54,12 @@ export const PageHeader = styled.div`
 `;
 
 export const Card = styled.section`
-  background: #fff;
+  background: linear-gradient(165deg, rgba(31, 41, 35, 0.82), rgba(21, 28, 24, 0.9));
   border: 1px solid ${theme.colors.line};
   border-radius: ${theme.radius.lg};
   padding: ${(p) => p.$pad || '22px'};
-  box-shadow: 0 1px 0 rgba(11, 61, 46, 0.03);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
   ${(p) => (p.$sticky ? 'position: sticky; top: 88px;' : '')}
 `;
 
@@ -85,37 +86,48 @@ export const Button = styled.button`
     p.$variant === 'outline' || p.$variant === 'ghost'
       ? 'transparent'
       : p.$variant === 'danger'
-        ? '#8f2a1c'
-        : theme.colors.forest};
+        ? 'rgba(255, 129, 112, 0.14)'
+        : theme.colors.accent};
   color: ${(p) =>
-    p.$variant === 'outline' || p.$variant === 'ghost'
-      ? p.$variant === 'ghost'
+    p.$variant === 'outline'
+      ? theme.colors.ink
+      : p.$variant === 'ghost'
         ? theme.colors.muted
-        : theme.colors.forest
-      : '#fff'};
+        : p.$variant === 'danger'
+          ? theme.colors.sale
+          : theme.colors.accentInk};
   border-color: ${(p) =>
     p.$variant === 'outline'
       ? theme.colors.line
       : p.$variant === 'ghost'
         ? 'transparent'
         : p.$variant === 'danger'
-          ? '#8f2a1c'
-          : theme.colors.forest};
+          ? 'rgba(255, 129, 112, 0.35)'
+          : theme.colors.accent};
+  box-shadow: ${(p) =>
+    p.$variant === 'outline' || p.$variant === 'ghost' || p.$variant === 'danger'
+      ? 'none'
+      : '0 8px 20px rgba(240, 162, 59, 0.18)'};
   &:hover:not(:disabled) {
     background: ${(p) =>
-      p.$variant === 'outline' || p.$variant === 'ghost'
-        ? theme.colors.cream
-        : p.$variant === 'danger'
-          ? '#7a2418'
-          : '#0f4d3a'};
+      p.$variant === 'outline'
+        ? 'rgba(255, 255, 255, 0.05)'
+        : p.$variant === 'ghost'
+          ? 'rgba(255, 255, 255, 0.05)'
+          : p.$variant === 'danger'
+            ? 'rgba(255, 129, 112, 0.22)'
+            : theme.colors.goldLight};
+    border-color: ${(p) =>
+      p.$variant === 'outline' ? 'rgba(240, 162, 59, 0.5)' : undefined};
     transform: translateY(-1px);
   }
 `;
 
 export const ButtonLink = styled.a`
   ${buttonStyles}
-  background: ${theme.colors.forest};
-  color: #fff;
+  background: ${theme.colors.accent};
+  color: ${theme.colors.accentInk};
+  box-shadow: 0 8px 20px rgba(240, 162, 59, 0.18);
 `;
 
 export const FormGrid = styled.div`
@@ -155,17 +167,17 @@ const FieldWrap = styled.div`
 
 const controlStyles = `
   width: 100%;
-  border: 1.5px solid ${theme.colors.line};
+  border: 1px solid ${theme.colors.line};
   border-radius: 10px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.045);
   padding: 10px 12px;
   font-size: 13.5px;
   color: ${theme.colors.ink};
   outline: none;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
-  &::placeholder { color: #9aa59d; }
-  &:focus { border-color: ${theme.colors.forest}; box-shadow: 0 0 0 3px rgba(11, 61, 46, 0.08); }
-  &:disabled { background: ${theme.colors.cream}; }
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  &::placeholder { color: #75827a; }
+  &:focus { border-color: rgba(240, 162, 59, 0.65); background: rgba(255, 255, 255, 0.07); box-shadow: 0 0 0 3px rgba(240, 162, 59, 0.12); }
+  &:disabled { background: rgba(255, 255, 255, 0.03); color: ${theme.colors.muted}; }
 `;
 
 export const Input = styled.input`
@@ -175,7 +187,7 @@ export const Input = styled.input`
 export const Select = styled.select`
   ${controlStyles}
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235C6B62' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239AA79F' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 34px;
@@ -213,7 +225,7 @@ export const CheckRow = styled.label`
   input {
     width: 16px;
     height: 16px;
-    accent-color: ${theme.colors.forest};
+    accent-color: ${theme.colors.accent};
   }
 `;
 
@@ -250,7 +262,7 @@ export const TableScroll = styled.div`
   overflow-x: auto;
   border: 1px solid ${theme.colors.line};
   border-radius: ${theme.radius.md};
-  background: #fff;
+  background: rgba(255, 255, 255, 0.02);
 `;
 
 export const Table = styled.table`
@@ -264,22 +276,25 @@ export const Table = styled.table`
     letter-spacing: 0.09em;
     text-transform: uppercase;
     color: ${theme.colors.muted};
-    background: ${theme.colors.cream};
+    background: rgba(255, 255, 255, 0.035);
     padding: 11px 14px;
     white-space: nowrap;
     border-bottom: 1px solid ${theme.colors.line};
   }
   td {
     padding: 12px 14px;
-    border-bottom: 1px solid #f0ebdf;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.055);
     vertical-align: middle;
     color: ${theme.colors.ink};
   }
   tbody tr:last-child td {
     border-bottom: 0;
   }
+  tbody tr {
+    transition: background 0.14s ease;
+  }
   tbody tr:hover {
-    background: #fcfaf4;
+    background: rgba(255, 255, 255, 0.035);
   }
   .actions {
     display: flex;
@@ -296,12 +311,12 @@ export const Table = styled.table`
 `;
 
 const badgeTones = {
-  neutral: ['#efe9dc', '#5C6B62'],
-  green: ['#e4efdc', '#3f6a28'],
-  gold: ['#f6edcf', '#8a6d12'],
-  red: ['#f9e7e3', '#9b3222'],
-  blue: ['#e2ecf5', '#2c5878'],
-  dark: ['#0B3D2E', '#F6F1E7'],
+  neutral: ['rgba(255, 255, 255, 0.09)', '#c4cec7'],
+  green: ['rgba(124, 179, 66, 0.16)', '#b3dc92'],
+  gold: ['rgba(240, 162, 59, 0.16)', '#f6c781'],
+  red: ['rgba(255, 129, 112, 0.16)', '#ffa294'],
+  blue: ['rgba(93, 165, 221, 0.16)', '#a7d2f2'],
+  dark: ['#f0a23b', '#1a1408'],
 };
 
 export const Badge = styled.span`
@@ -360,8 +375,8 @@ export const Spinner = styled.span`
   display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(11, 61, 46, 0.2);
-  border-top-color: ${theme.colors.forest};
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  border-top-color: ${theme.colors.accent};
   border-radius: 50%;
   animation: ${spin} 0.8s linear infinite;
 `;
@@ -383,7 +398,7 @@ export function EmptyState({ icon = null, title = 'Nothing here yet', text = '',
         color: theme.colors.muted,
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10, color: theme.colors.green }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10, color: theme.colors.accent }}>
         {icon || <ImageIcon size={28} />}
       </div>
       <h3 style={{ fontSize: 20, color: theme.colors.forest, marginBottom: 4 }}>{title}</h3>
@@ -403,8 +418,8 @@ export function ErrorBlock({ message, onRetry }) {
         gap: 10,
         padding: '12px 14px',
         borderRadius: 10,
-        border: '1px solid rgba(176, 58, 46, 0.3)',
-        background: 'rgba(176, 58, 46, 0.07)',
+        border: '1px solid rgba(255, 129, 112, 0.28)',
+        background: 'rgba(255, 129, 112, 0.08)',
         color: theme.colors.sale,
         fontSize: 13,
         marginBottom: 14,
@@ -466,8 +481,8 @@ export const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: rgba(11, 32, 24, 0.55);
-  backdrop-filter: blur(2px);
+  background: rgba(4, 8, 6, 0.72);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -478,9 +493,10 @@ export const ModalOverlay = styled.div`
 export const ModalCard = styled.div`
   width: 100%;
   max-width: ${(p) => (p.$wide ? '1000px' : '680px')};
-  background: ${theme.colors.cream};
+  background: linear-gradient(170deg, #1d2721, #151c18);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 18px;
-  box-shadow: ${theme.shadow.lift};
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.55);
   overflow: hidden;
   margin: auto 0;
   .head {
@@ -489,7 +505,7 @@ export const ModalCard = styled.div`
     justify-content: space-between;
     gap: 14px;
     padding: 18px 22px;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.025);
     border-bottom: 1px solid ${theme.colors.line};
     h2 {
       font-size: 22px;
@@ -503,8 +519,8 @@ export const ModalCard = styled.div`
       place-items: center;
       color: ${theme.colors.muted};
       &:hover {
-        background: ${theme.colors.cream};
-        color: ${theme.colors.forest};
+        background: rgba(255, 255, 255, 0.07);
+        color: ${theme.colors.ink};
       }
     }
   }
@@ -518,7 +534,7 @@ export const ModalCard = styled.div`
     justify-content: flex-end;
     gap: 10px;
     padding: 15px 22px;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.025);
     border-top: 1px solid ${theme.colors.line};
     flex-wrap: wrap;
   }
@@ -577,11 +593,12 @@ const ToastItem = styled.div`
   gap: 9px;
   padding: 11px 14px;
   border-radius: 10px;
-  background: ${(p) => (p.$tone === 'error' ? '#8f2a1c' : theme.colors.forest)};
-  color: #fff;
+  border: 1px solid ${(p) => (p.$tone === 'error' ? 'rgba(255, 129, 112, 0.4)' : 'rgba(240, 162, 59, 0.35)')};
+  background: ${(p) => (p.$tone === 'error' ? '#3a1c17' : '#1f2921')};
+  color: ${(p) => (p.$tone === 'error' ? '#ffb3a6' : '#f5edda')};
   font-size: 13px;
   line-height: 1.5;
-  box-shadow: ${theme.shadow.card};
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
   animation: ${toastIn} 0.2s ease;
   svg {
     flex-shrink: 0;
@@ -714,7 +731,7 @@ export function MediaPicker({ open, onClose, onSelect, multiple = false }) {
                 border: `1px solid ${theme.colors.line}`,
                 borderRadius: 10,
                 overflow: 'hidden',
-                background: '#fff',
+                background: '#18201c',
                 textAlign: 'left',
               }}
             >
@@ -779,7 +796,7 @@ export function ImageField({ label = 'Image', value, onChange, hint }) {
             height: 76,
             borderRadius: 10,
             border: `1px solid ${theme.colors.line}`,
-            background: value ? `#fff url(${value}) center / cover no-repeat` : theme.colors.cream,
+            background: value ? `#fdfcf8 url(${value}) center / cover no-repeat` : 'rgba(255, 255, 255, 0.04)',
             display: 'grid',
             placeItems: 'center',
             flexShrink: 0,

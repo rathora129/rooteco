@@ -2,6 +2,7 @@ import { getCollections } from '@/lib/catalog';
 import { getSettings } from '@/lib/settings';
 import { absoluteUrl } from '@/lib/seo';
 import CollectionsIndex from '@/components/pages/CollectionsIndex';
+import CmsForSlug from '@/components/pages/CmsForSlug';
 
 export async function generateMetadata() {
   const settings = await getSettings();
@@ -16,5 +17,10 @@ export async function generateMetadata() {
 
 export default async function CollectionsPage() {
   const collections = await getCollections();
-  return <CollectionsIndex collections={collections} />;
+  return (
+    <>
+      <CollectionsIndex collections={collections} />
+      <CmsForSlug slug="collections" />
+    </>
+  );
 }

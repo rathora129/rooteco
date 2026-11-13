@@ -31,9 +31,9 @@ import {
 import { apiRequest, useDebounced, useList } from '@/components/dashboard/hooks';
 
 const MultiBox = styled.div`
-  border: 1.5px solid ${theme.colors.line};
+  border: 1px solid ${theme.colors.line};
   border-radius: 10px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.045);
   max-height: 170px;
   overflow-y: auto;
   padding: 8px 10px;
@@ -49,7 +49,7 @@ const MultiBox = styled.div`
     padding: 2px 0;
   }
   input {
-    accent-color: ${theme.colors.forest};
+    accent-color: ${theme.colors.accent};
   }
   .empty {
     font-size: 12px;
@@ -60,7 +60,7 @@ const MultiBox = styled.div`
 const SectionBox = styled.div`
   border: 1px solid ${theme.colors.line};
   border-radius: 12px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.035);
   padding: 12px;
   & + & {
     margin-top: 10px;
@@ -429,7 +429,11 @@ export default function GenericModule({
       refresh();
       onSaved?.(response.data);
     } catch (err) {
-      setFormError(err.message);
+      setFormError(
+        err instanceof SyntaxError
+          ? 'One of the JSON fields is not valid JSON. Check the brackets and quotes.'
+          : err.message
+      );
     } finally {
       setSaving(false);
     }
@@ -501,8 +505,9 @@ export default function GenericModule({
           )}
         </Toolbar>
 
-        {error && <ErrorBlock message={error} onRetry={refresh} />}
-        {loading ? (
+        {error ? (
+          <ErrorBlock message={error} onRetry={refresh} />
+        ) : loading ? (
           <LoadingBlock label="Loading records…" />
         ) : data.length === 0 ? (
           <EmptyState title={emptyTitle || 'No records found'} text={emptyText || 'Try a different search or create a new record.'} />
@@ -513,7 +518,7 @@ export default function GenericModule({
                 <thead>
                   <tr>
                     {columns.map((column) => (
-                      <th key={column.key} style={{ width: column.width }}>{column.label}</th>
+                      <th key={column.key} style={{ width: column.width, minWidth: column.width }}>{column.label}</th>
                     ))}
                     {(canEdit || canDelete || rowActions) && <th style={{ textAlign: 'right' }}>Actions</th>}
                   </tr>
@@ -522,7 +527,7 @@ export default function GenericModule({
                   {data.map((row) => (
                     <tr key={getRowKey(row)}>
                       {columns.map((column) => (
-                        <td key={column.key}>
+                        <td key={column.key} style={column.width ? { width: column.width, minWidth: column.width } : undefined}>
                           {column.render ? column.render(row) : row[column.key] ?? '—'}
                         </td>
                       ))}

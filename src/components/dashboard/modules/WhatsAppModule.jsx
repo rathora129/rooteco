@@ -48,6 +48,7 @@ export default function WhatsAppModule() {
   const { notify } = useToast();
   const [config, setConfig] = useState(null);
   const [configError, setConfigError] = useState('');
+  const [configKey, setConfigKey] = useState(0);
   const [q, setQ] = useState('');
   const [direction, setDirection] = useState('');
   const [page, setPage] = useState(1);
@@ -76,7 +77,7 @@ export default function WhatsAppModule() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [configKey]);
 
   async function sendMessage() {
     setSending(true);
@@ -116,10 +117,19 @@ export default function WhatsAppModule() {
         <Button as={Link} href="/dashboard/settings" $variant="outline">WhatsApp settings</Button>
       </PageHeader>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.1fr', gap: 18, alignItems: 'start', marginBottom: 18 }}>
+      <div className="dash-grid-form" style={{ gap: 18, marginBottom: 18 }}>
         <Card>
           <h2 style={{ fontSize: 16, color: theme.colors.forest, marginBottom: 8 }}>Platform status</h2>
-          {configError && <ErrorBlock message={configError} />}
+          {configError && (
+            <ErrorBlock
+              message={configError}
+              onRetry={() => {
+                setConfig(null);
+                setConfigError('');
+                setConfigKey((key) => key + 1);
+              }}
+            />
+          )}
           {!config && !configError ? (
             <LoadingBlock label="Checking configuration…" />
           ) : (
@@ -153,7 +163,7 @@ export default function WhatsAppModule() {
           {!ready && config && (
             <div
               style={{
-                background: theme.colors.cream,
+                background: theme.colors.creamDark,
                 border: `1px solid ${theme.colors.line}`,
                 borderRadius: 10,
                 padding: 10,
@@ -218,8 +228,9 @@ export default function WhatsAppModule() {
           </Select>
         </Toolbar>
 
-        {error && <ErrorBlock message={error} onRetry={refresh} />}
-        {loading ? (
+        {error ? (
+          <ErrorBlock message={error} onRetry={refresh} />
+        ) : loading ? (
           <LoadingBlock label="Loading messages…" />
         ) : data.length === 0 ? (
           <EmptyState

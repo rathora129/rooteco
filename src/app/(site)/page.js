@@ -9,6 +9,7 @@ import HamperBanner from '@/components/home/HamperBanner';
 import WallOfLove from '@/components/home/WallOfLove';
 import OfficesSection from '@/components/home/OfficesSection';
 import { SwagIsAlways, CorporateMadeEasy, HomeFaq } from '@/components/home/EditorialSections';
+import CmsForSlug from '@/components/pages/CmsForSlug';
 import {
   getBanners,
   getCategories,
@@ -70,6 +71,7 @@ export default async function HomePage() {
       <SwagIsAlways />
       <CorporateMadeEasy />
       <HomeFaq faqs={faqs} email={settings.contact.email} />
+      <CmsForSlug slug="home" />
     </>
   );
 }

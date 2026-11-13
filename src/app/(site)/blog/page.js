@@ -2,6 +2,7 @@ import { getBlogs } from '@/lib/catalog';
 import { getSettings } from '@/lib/settings';
 import { absoluteUrl } from '@/lib/seo';
 import BlogIndex from '@/components/pages/BlogIndex';
+import CmsForSlug from '@/components/pages/CmsForSlug';
 
 export async function generateMetadata() {
   const settings = await getSettings();
@@ -16,5 +17,10 @@ export async function generateMetadata() {
 
 export default async function BlogPage() {
   const blogs = await getBlogs();
-  return <BlogIndex blogs={blogs} />;
+  return (
+    <>
+      <BlogIndex blogs={blogs} />
+      <CmsForSlug slug="blog" />
+    </>
+  );
 }

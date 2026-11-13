@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -97,24 +97,28 @@ const PAGE_TITLES = {
 
 const Shell = styled.div`
   min-height: 100dvh;
-  background: ${theme.colors.cream};
+  background:
+    radial-gradient(1100px 520px at 78% -10%, rgba(240, 162, 59, 0.07), transparent 60%),
+    ${theme.colors.cream};
 `;
 
 const Sidebar = styled.aside`
   position: fixed;
   inset: 0 auto 0 0;
-  width: 256px;
+  width: 264px;
   z-index: 60;
-  background: ${theme.colors.forest};
-  color: rgba(246, 241, 231, 0.8);
+  background: ${theme.colors.sidebar};
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(244, 240, 230, 0.76);
   display: flex;
   flex-direction: column;
   padding: 20px 14px 16px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   @media (max-width: 1024px) {
     transform: translateX(${(p) => (p.$open ? '0' : '-100%')});
     transition: transform 0.25s ease;
-    box-shadow: ${(p) => (p.$open ? theme.shadow.lift : 'none')};
+    box-shadow: ${(p) => (p.$open ? '0 24px 60px rgba(0, 0, 0, 0.55)' : 'none')};
   }
 `;
 
@@ -126,28 +130,35 @@ const Brand = styled(Link)`
   border-bottom: 1px solid rgba(246, 241, 231, 0.12);
   margin-bottom: 16px;
   .logo {
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
-    background: #fffdf7;
-    padding: 4px;
+    background: #fbf7ec;
+    padding: 3px;
     display: grid;
     place-items: center;
     flex-shrink: 0;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(240, 162, 59, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
   }
   .name {
     display: block;
     font-family: ${theme.fonts.display};
     font-size: 20px;
-    color: #fff;
+    color: #fdfaf2;
     line-height: 1.1;
   }
   .sub {
     display: block;
-    font-size: 10px;
+    font-size: 9.5px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: ${theme.colors.goldLight};
+    color: ${theme.colors.accent};
     margin-top: 3px;
   }
 `;
@@ -174,18 +185,18 @@ const NavLink = styled(Link)`
   border-radius: 9px;
   font-size: 13px;
   font-weight: 500;
-  color: ${(p) => (p.$active ? '#fff' : 'rgba(246, 241, 231, 0.72)')};
-  background: ${(p) => (p.$active ? 'rgba(201, 162, 39, 0.18)' : 'transparent')};
-  border-left: 2px solid ${(p) => (p.$active ? theme.colors.gold : 'transparent')};
-  transition: all 0.16s ease;
+  color: ${(p) => (p.$active ? '#fff' : 'rgba(244, 240, 230, 0.68)')};
+  background: ${(p) => (p.$active ? 'rgba(240, 162, 59, 0.14)' : 'transparent')};
+  border-left: 2px solid ${(p) => (p.$active ? theme.colors.accent : 'transparent')};
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
   svg {
     width: 16px;
     height: 16px;
-    color: ${(p) => (p.$active ? theme.colors.goldLight : 'rgba(246, 241, 231, 0.55)')};
+    color: ${(p) => (p.$active ? theme.colors.accent : 'rgba(244, 240, 230, 0.5)')};
     flex-shrink: 0;
   }
   &:hover {
-    background: rgba(246, 241, 231, 0.08);
+    background: rgba(255, 255, 255, 0.06);
     color: #fff;
   }
 `;
@@ -216,20 +227,20 @@ const Topbar = styled.header`
   align-items: center;
   gap: 14px;
   padding: 0 26px;
-  background: rgba(253, 252, 248, 0.9);
-  backdrop-filter: blur(10px);
+  background: rgba(15, 21, 18, 0.72);
+  backdrop-filter: blur(18px) saturate(140%);
   border-bottom: 1px solid ${theme.colors.line};
   .menu {
     display: none;
     @media (max-width: 1024px) {
       display: grid;
       place-items: center;
-      width: 34px;
-      height: 34px;
-      border-radius: 9px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
       border: 1px solid ${theme.colors.line};
-      background: #fff;
-      color: ${theme.colors.forest};
+      background: rgba(255, 255, 255, 0.04);
+      color: ${theme.colors.ink};
     }
   }
   .title {
@@ -242,7 +253,14 @@ const Topbar = styled.header`
     svg {
       width: 13px;
       height: 13px;
-      color: ${theme.colors.muted};
+      color: ${theme.colors.accent};
+    }
+  }
+  @media (max-width: 480px) {
+    padding: 0 16px;
+    gap: 10px;
+    .title {
+      display: none;
     }
   }
   .spacer {
@@ -254,13 +272,15 @@ const Topbar = styled.header`
     gap: 5px;
     font-size: 12.5px;
     font-weight: 600;
-    color: ${theme.colors.forest};
+    color: ${theme.colors.ink};
     padding: 7px 12px;
     border: 1px solid ${theme.colors.line};
     border-radius: ${theme.radius.pill};
-    background: #fff;
+    background: rgba(255, 255, 255, 0.04);
+    transition: border-color 0.18s ease, background 0.18s ease;
     &:hover {
-      border-color: ${theme.colors.forest};
+      border-color: rgba(240, 162, 59, 0.55);
+      background: rgba(240, 162, 59, 0.08);
     }
     @media (max-width: 620px) {
       span {
@@ -275,15 +295,16 @@ const Topbar = styled.header`
     padding-left: 12px;
     border-left: 1px solid ${theme.colors.line};
     .avatar {
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      background: ${theme.colors.forest};
-      color: ${theme.colors.goldLight};
+      background: linear-gradient(145deg, #f0a23b, #d07c1d);
+      color: #1a1408;
       display: grid;
       place-items: center;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(240, 162, 59, 0.25);
     }
     .who {
       display: flex;
@@ -312,7 +333,7 @@ const Topbar = styled.header`
       border-radius: 8px;
       color: ${theme.colors.muted};
       &:hover {
-        background: ${theme.colors.cream};
+        background: rgba(255, 255, 255, 0.06);
         color: ${theme.colors.sale};
       }
     }
@@ -343,6 +364,15 @@ export default function DashboardShell({ owner, children }) {
   const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
+  useEffect(() => {
+    if (!open) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
+
   const isActive = (href) =>
     href === '/dashboard' ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
@@ -370,11 +400,18 @@ export default function DashboardShell({ owner, children }) {
 
   return (
     <ToastProvider>
-      <Shell>
+      <Shell className="dashboard-theme">
         <Sidebar $open={open}>
           <Brand href="/dashboard" onClick={() => setOpen(false)}>
             <span className="logo">
-              <Image src="/images/rooteco-logo.png" alt="RootEco" width={120} height={118} />
+              <Image
+                src="/images/rooteco-logo.png"
+                alt="RootEco"
+                width={92}
+                height={90}
+                sizes="46px"
+                priority
+              />
             </span>
             <span>
               <span className="name">RootEco</span>

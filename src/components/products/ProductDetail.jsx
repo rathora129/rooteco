@@ -143,6 +143,8 @@ const Main = styled.div`
   border-radius: ${theme.radius.lg};
   overflow: hidden;
   background: ${theme.colors.cream};
+  border: 1px solid ${theme.colors.line};
+  box-shadow: 0 24px 60px -38px rgba(11, 61, 46, 0.45);
   cursor: zoom-in;
   img {
     object-fit: cover;
@@ -156,7 +158,10 @@ const Main = styled.div`
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(253, 252, 248, 0.94);
+    background: rgba(253, 252, 248, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
     color: ${theme.colors.forest};
     font-size: 12px;
     font-weight: 600;
@@ -172,7 +177,10 @@ const Main = styled.div`
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background: rgba(253, 252, 248, 0.94);
+    background: rgba(253, 252, 248, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
     display: grid;
     place-items: center;
     color: ${theme.colors.forest};
@@ -332,11 +340,16 @@ const Variants = styled.div`
   button {
     padding: 9px 16px;
     border-radius: ${theme.radius.pill};
-    border: 1.5px solid ${(p) => (p.$active ? theme.colors.forest : theme.colors.line)};
-    background: ${(p) => (p.$active ? theme.colors.forest : '#fff')};
-    color: ${(p) => (p.$active ? '#fff' : theme.colors.ink)};
+    border: 1.5px solid ${theme.colors.line};
+    background: #fff;
+    color: ${theme.colors.ink};
     font-size: 13.5px;
     transition: all 0.2s ease;
+    &.active {
+      border-color: ${theme.colors.forest};
+      background: ${theme.colors.forest};
+      color: #fff;
+    }
     &:hover {
       border-color: ${theme.colors.forest};
     }
@@ -827,7 +840,8 @@ export default function ProductDetail({
                       <button
                         key={v}
                         type="button"
-                        $active={v === variant}
+                        className={v === variant ? 'active' : undefined}
+                        aria-pressed={v === variant}
                         onClick={() => setVariant(v)}
                       >
                         {v}

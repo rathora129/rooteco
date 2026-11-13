@@ -14,10 +14,12 @@ export const GET = handleRoute(async (request) => {
   const { searchParams } = new URL(request.url);
   const params = parseListParams(searchParams);
   const status = searchParams.get('status');
+  const source = searchParams.get('source');
   const due = searchParams.get('due');
 
   const where = {
     ...(status ? { status } : {}),
+    ...(source ? { source } : {}),
     ...(due === 'true' ? { followUpDate: { lte: new Date() }, status: { notIn: ['won', 'lost'] } } : {}),
     ...(params.q
       ? {
@@ -26,6 +28,7 @@ export const GET = handleRoute(async (request) => {
             { company: { contains: params.q, mode: 'insensitive' } },
             { email: { contains: params.q, mode: 'insensitive' } },
             { phone: { contains: params.q, mode: 'insensitive' } },
+            { city: { contains: params.q, mode: 'insensitive' } },
           ],
         }
       : {}),

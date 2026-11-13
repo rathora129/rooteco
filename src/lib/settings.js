@@ -1,7 +1,8 @@
+import { cache } from 'react';
 import prisma from '@/lib/prisma';
 import { DEFAULT_SETTINGS } from '@/lib/defaults';
 
-export async function getSettings() {
+async function loadSettings() {
   let rows = [];
   try {
     rows = await prisma.setting.findMany();
@@ -20,6 +21,9 @@ export async function getSettings() {
   return settings;
 }
 
+// Layout and page components both read settings; cache() collapses them into one query per request.
+export const getSettings = cache(loadSettings);
+
 export async function updateSettings(groups) {
   const updates = [];
   for (const [key, value] of Object.entries(groups)) {
@@ -33,7 +37,7 @@ export async function updateSettings(groups) {
     );
   }
   await prisma.$transaction(updates);
-  return getSettings();
+  return loadSettings();
 }
 
 export function publicSettings(settings) {

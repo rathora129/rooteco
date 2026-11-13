@@ -13,15 +13,16 @@ const Card = styled.article`
   position: relative;
   min-width: 0;
   height: 100%;
-  background: #fff;
+  background: linear-gradient(180deg, #fffdf9 0%, #ffffff 60%);
   border: 1px solid ${theme.colors.line};
   border-radius: ${theme.radius.md};
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   &:hover {
     transform: translateY(-6px);
+    border-color: rgba(76, 122, 52, 0.35);
     box-shadow: ${theme.shadow.lift};
   }
   @media (max-width: 360px) {
@@ -37,6 +38,12 @@ const Card = styled.article`
       width: 32px;
       height: 32px;
     }
+  }
+  .badge {
+    max-width: calc(100% - 56px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   ${(p) =>
     p.$layout === 'list' &&
@@ -85,7 +92,7 @@ const Media = styled.div`
 
 const ImageWrap = styled(Link)`
   position: relative;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 5;
   background: ${theme.colors.cream};
   overflow: hidden;
   display: block;
@@ -93,6 +100,9 @@ const ImageWrap = styled(Link)`
   img {
     object-fit: cover;
     transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @media (max-width: 640px) {
+    aspect-ratio: 1 / 1;
   }
   ${Card}:hover & img {
     transform: scale(1.06);
@@ -114,7 +124,11 @@ const WishBtn = styled.button`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 2px 8px rgba(21, 34, 27, 0.08);
   display: grid;
   place-items: center;
   color: ${theme.colors.forest};
@@ -220,12 +234,18 @@ const Rating = styled.div`
   font-size: 12.5px;
   color: ${theme.colors.muted};
   white-space: nowrap;
+  min-width: 0;
   svg {
     color: ${theme.colors.gold};
     fill: ${theme.colors.gold};
     width: 13px;
     height: 13px;
     flex-shrink: 0;
+  }
+  .value {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 `;
 
@@ -249,6 +269,9 @@ const Actions = styled.div`
     `}
   @media (max-width: 640px) {
     gap: 7px;
+  }
+  @media (max-width: 420px) {
+    grid-template-columns: 1fr;
   }
 `;
 
@@ -373,7 +396,7 @@ export default function ProductCard({ product, layout = 'grid' }) {
         <Name href={`/products/${product.slug}`}>{product.name}</Name>
         <Rating title="Demo rating">
           <Star />
-          {product.rating} ({product.reviewsCount}) · demo
+          <span className="value">{product.rating} ({product.reviewsCount}) · demo</span>
         </Rating>
         <Price>
           <span className="now">{formatINR(product.price)}</span>
