@@ -35,6 +35,20 @@ export function buildQuery(params = {}) {
   return query ? `?${query}` : '';
 }
 
+let statsRequest = null;
+let statsTime = 0;
+
+export function getDashboardStats(maxAge = 15000) {
+  const now = Date.now();
+  if (statsRequest && now - statsTime < maxAge) return statsRequest;
+  statsTime = now;
+  statsRequest = apiRequest('/api/dashboard/stats').catch((err) => {
+    statsRequest = null;
+    throw err;
+  });
+  return statsRequest;
+}
+
 export function useDebounced(value, delay = 300) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {

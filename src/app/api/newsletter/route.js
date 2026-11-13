@@ -1,6 +1,15 @@
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
-import { ApiError, apiSuccess, handleRoute, readJson } from '@/lib/api/response';
+import { requireOwner } from '@/lib/auth';
+import {
+  ApiError,
+  apiSuccess,
+  buildMeta,
+  handleRoute,
+  parseListParams,
+  readJson,
+  serialize,
+} from '@/lib/api/response';
 import { rateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
@@ -8,6 +17,37 @@ export const dynamic = 'force-dynamic';
 const newsletterSchema = z.object({
   email: z.string().trim().email().max(200),
   source: z.string().trim().max(60).optional(),
+});
+
+export const GET = handleRoute(async (request) => {
+  await requireOwner();
+  const { searchParams } = new URL(request.url);
+  const params = parseListParams(searchParams);
+  const state = searchParams.get('state');
+
+  const where = {
+    ...(params.q ? { email: { contains: params.q, mode: 'insensitive' } } : {}),
+    ...(state === 'active' ? { active: true } : {}),
+    ...(state === 'unsubscribed' ? { active: false } : {}),
+  };
+
+  const [total, active, unsubscribed, subscribers] = await Promise.all([
+    prisma.newsletterSubscriber.count({ where }),
+    prisma.newsletterSubscriber.count({ where: { active: true } }),
+    prisma.newsletterSubscriber.count({ where: { active: false } }),
+    prisma.newsletterSubscriber.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: params.skip,
+      take: params.take,
+    }),
+  ]);
+
+  return apiSuccess(serialize(subscribers), {
+    ...buildMeta(total, params.page, params.pageSize),
+    active,
+    unsubscribed,
+  });
 });
 
 export const POST = handleRoute(async (request) => {

@@ -468,7 +468,7 @@ async function payOnline({ created, customerName, data }) {
   });
 }
 
-export default function CheckoutForm() {
+export default function CheckoutForm({ hero = {} }) {
   const router = useRouter();
   const { cart, cartSubtotal, cartCount, clearCart, setCartOpen, hydrated } = useStore();
   const [payment, setPayment] = useState('bank-transfer');
@@ -642,8 +642,8 @@ export default function CheckoutForm() {
     return (
       <>
         <PageHero
-          eyebrow="Checkout"
-          title="Checkout"
+          eyebrow={hero.eyebrow || 'Checkout'}
+          title={hero.title || 'Checkout'}
           crumbs={[{ label: 'Cart', href: '/cart' }, { label: 'Checkout' }]}
         />
         <Section>
@@ -665,9 +665,12 @@ export default function CheckoutForm() {
   return (
     <>
       <PageHero
-        eyebrow="Almost there"
-        title="Checkout"
-        subtitle="Add your details and choose how you'd like to settle your order. We'll confirm stock and share the invoice or delivery slot by email."
+        eyebrow={hero.eyebrow || 'Almost there'}
+        title={hero.title || 'Checkout'}
+        subtitle={
+          hero.subtitle ||
+          "Add your details and choose how you'd like to settle your order. We'll confirm stock and share the invoice or delivery slot by email."
+        }
         crumbs={[{ label: 'Cart', href: '/cart' }, { label: 'Checkout' }]}
       />
 

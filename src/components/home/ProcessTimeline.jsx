@@ -134,15 +134,15 @@ const Complete = styled.div`
   }
 `;
 
-export default function ProcessTimeline() {
+export default function ProcessTimeline({ content = {} }) {
   return (
     <Section style={{ background: theme.colors.cream }}>
       <Container>
         <Reveal>
           <SectionHead>
-            <Eyebrow>The Process</Eyebrow>
-            <h2>Process &amp; track delivery of every order</h2>
-            <p>In just a few easy steps — from purchase order to doorstep.</p>
+            <Eyebrow>{content.eyebrow || 'The Process'}</Eyebrow>
+            <h2>{content.heading || 'Process & track delivery of every order'}</h2>
+            <p>{content.body || 'In just a few easy steps — from purchase order to doorstep.'}</p>
           </SectionHead>
         </Reveal>
         <Timeline>

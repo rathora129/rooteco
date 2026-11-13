@@ -5,6 +5,10 @@ import styled from 'styled-components';
 import { ArrowRight, Mail, Phone, Sparkles } from 'lucide-react';
 import theme from '@/styles/theme';
 import { Container, Section } from '@/components/common/ui';
+import { Fragment } from 'react';
+import CmsSections from '@/components/pages/CmsSections';
+import { isSectionVisible } from '@/lib/cms';
+import { layoutDefaults, sectionLayout, sectionLayoutKey } from '@/lib/pages/layouts';
 import PageHero from '@/components/common/PageHero';
 import FAQAccordion from '@/components/common/FAQAccordion';
 
@@ -79,24 +83,28 @@ const HelpLine = styled.p`
   }
 `;
 
-export default function FAQPage({ faqs = [], contact = {} }) {
-  return (
-    <>
-      <PageHero
-        eyebrow="Help centre"
-        title="Frequently Asked Questions"
-        subtitle="Everything you need to know about MOQs, branding, samples, payments and delivery. Still stuck? Our gifting team is happy to help."
-        crumbs={[{ label: 'FAQ' }]}
-      />
+export default function FAQPage({ faqs = [], contact = {}, sections }) {
+  const hero = (content) => (
+    <PageHero
+      eyebrow={content.eyebrow || 'Help centre'}
+      title={content.heading || 'Frequently Asked Questions'}
+      subtitle={
+        content.body ||
+        'Everything you need to know about MOQs, branding, samples, payments and delivery. Still stuck? Our gifting team is happy to help.'
+      }
+      crumbs={[{ label: 'FAQ' }]}
+    />
+  );
 
+  const body = (content) => (
       <Section>
         <Container>
           <Wrap>
             <FAQAccordion items={faqs} defaultOpen={0} />
 
             <Support>
-              <h2>Still have a question?</h2>
-              <p>Pick the fastest way to reach us.</p>
+              <h2>{content.heading || 'Still have a question?'}</h2>
+              <p>{content.body || 'Pick the fastest way to reach us.'}</p>
               <div className="cards">
                 <a className="card" href={`mailto:${contact.email || 'hello@rooteco.example.com'}`}>
                   <Mail size={20} />
@@ -127,6 +135,22 @@ export default function FAQPage({ faqs = [], contact = {} }) {
           </Wrap>
         </Container>
       </Section>
-    </>
   );
+
+  const list = (Array.isArray(sections) && sections.length ? sections : layoutDefaults('faq')).filter(
+    isSectionVisible,
+  );
+  return list.map((section) => {
+    const layout = sectionLayout(section);
+    const content = {
+      eyebrow: section.data?.subheading || '',
+      heading: section.heading || '',
+      body: section.body || '',
+      ...(section.data || {}),
+    };
+    const key = section.id || sectionLayoutKey(section) || layout;
+    if (layout === 'faq-hero') return <Fragment key={key}>{hero(content)}</Fragment>;
+    if (layout === 'faq-body') return <Fragment key={key}>{body(content)}</Fragment>;
+    return <CmsSections key={key} sections={[section]} />;
+  });
 }

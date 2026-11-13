@@ -268,7 +268,7 @@ const Suggestions = styled.div`
   }
 `;
 
-export default function CartPage({ recommendations = [] }) {
+export default function CartPage({ recommendations = [], hero = {} }) {
   const { cart, cartSubtotal, cartCount, updateQty, removeFromCart, clearCart, hydrated } =
     useStore();
 
@@ -279,9 +279,12 @@ export default function CartPage({ recommendations = [] }) {
   return (
     <>
       <PageHero
-        eyebrow="Your selections"
-        title="Your Gift Cart"
-        subtitle="Review your gifts, adjust quantities and proceed to checkout. Bulk quantities? Request a quote for tiered pricing."
+        eyebrow={hero.eyebrow || 'Your selections'}
+        title={hero.title || 'Your Gift Cart'}
+        subtitle={
+          hero.subtitle ||
+          'Review your gifts, adjust quantities and proceed to checkout. Bulk quantities? Request a quote for tiered pricing.'
+        }
         crumbs={[{ label: 'Cart' }]}
       />
 

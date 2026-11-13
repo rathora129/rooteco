@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import Link from 'next/link';
 import styled from 'styled-components';
 import {
@@ -17,6 +17,9 @@ import { brand } from '@/data/navigation';
 import theme from '@/styles/theme';
 import { Button, Container, Section } from '@/components/common/ui';
 import PageHero from '@/components/common/PageHero';
+import CmsSections from '@/components/pages/CmsSections';
+import { isSectionVisible } from '@/lib/cms';
+import { layoutDefaults, sectionLayout, sectionLayoutKey } from '@/lib/pages/layouts';
 import { CheckLine, DemoNote, Field, Full, Grid, Success } from '@/components/forms/formStyles';
 
 const Layout = styled.div`
@@ -131,7 +134,7 @@ const TOPICS = [
   'Something else',
 ];
 
-export default function ContactPage({ contact = {} }) {
+export default function ContactPage({ contact = {}, sections }) {
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -179,15 +182,19 @@ export default function ContactPage({ contact = {} }) {
     }
   };
 
-  return (
-    <>
-      <PageHero
-        eyebrow="We're here to help"
-        title="Contact RootEco"
-        subtitle="Questions about a product, a bulk order or an existing delivery? Send a note and our gifting team will get back within one business day."
-        crumbs={[{ label: 'Contact' }]}
-      />
+  const hero = (content) => (
+    <PageHero
+      eyebrow={content.eyebrow || "We're here to help"}
+      title={content.heading || 'Contact RootEco'}
+      subtitle={
+        content.body ||
+        'Questions about a product, a bulk order or an existing delivery? Send a note and our gifting team will get back within one business day.'
+      }
+      crumbs={[{ label: 'Contact' }]}
+    />
+  );
 
+  const body = (content) => (
       <Section>
         <Container>
           <Layout>
@@ -208,9 +215,9 @@ export default function ContactPage({ contact = {} }) {
                 </Success>
               ) : (
                 <>
-                  <h2>Send us a message</h2>
+                  <h2>{content.heading || 'Send us a message'}</h2>
                   <p className="lead">
-                    Share a few details and we&apos;ll route your message to the right person.
+                    {content.body || "Share a few details and we'll route your message to the right person."}
                   </p>
                   <form onSubmit={onSubmit}>
                     <Grid>
@@ -360,6 +367,22 @@ export default function ContactPage({ contact = {} }) {
           </Layout>
         </Container>
       </Section>
-    </>
   );
+
+  const list = (Array.isArray(sections) && sections.length ? sections : layoutDefaults('contact')).filter(
+    isSectionVisible,
+  );
+  return list.map((section) => {
+    const layout = sectionLayout(section);
+    const content = {
+      eyebrow: section.data?.subheading || '',
+      heading: section.heading || '',
+      body: section.body || '',
+      ...(section.data || {}),
+    };
+    const key = section.id || sectionLayoutKey(section) || layout;
+    if (layout === 'contact-hero') return <Fragment key={key}>{hero(content)}</Fragment>;
+    if (layout === 'contact-body') return <Fragment key={key}>{body(content)}</Fragment>;
+    return <CmsSections key={key} sections={[section]} />;
+  });
 }

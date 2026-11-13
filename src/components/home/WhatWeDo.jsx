@@ -77,16 +77,19 @@ const Card = styled(Link)`
   }
 `;
 
-export default function WhatWeDo({ categories = [] }) {
+export default function WhatWeDo({ categories = [], content = {} }) {
   const cards = categories.filter((c) => c.homeCard);
   return (
     <Section>
       <Container>
         <Reveal>
           <SectionHead>
-            <Eyebrow>What We Do</Eyebrow>
-            <h2>Every kind of gift, for every occasion</h2>
-            <p>From first-day welcome kits to festive hampers — one partner for every gifting moment.</p>
+            <Eyebrow>{content.eyebrow || 'What We Do'}</Eyebrow>
+            <h2>{content.heading || 'Every kind of gift, for every occasion'}</h2>
+            <p>
+              {content.body ||
+                'From first-day welcome kits to festive hampers — one partner for every gifting moment.'}
+            </p>
           </SectionHead>
         </Reveal>
         <Grid>

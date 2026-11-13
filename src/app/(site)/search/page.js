@@ -1,7 +1,8 @@
 import { Suspense } from 'react';
 import PageHero from '@/components/common/PageHero';
 import SearchResults from '@/components/search/SearchResults';
-import { getCategories, getProducts } from '@/lib/catalog';
+import { getCategories, getPage, getProducts } from '@/lib/catalog';
+import { heroFromSections } from '@/lib/pages/layouts';
 
 export const metadata = {
   title: 'Search Gifts',
@@ -10,13 +11,23 @@ export const metadata = {
 };
 
 export default async function SearchPage() {
-  const [products, categories] = await Promise.all([getProducts(), getCategories()]);
+  const [products, categories, page] = await Promise.all([
+    getProducts(),
+    getCategories(),
+    getPage('search'),
+  ]);
+  const hero = heroFromSections(page?.sections, {
+    eyebrow: 'Search',
+    title: 'Find the right gift, faster',
+    subtitle:
+      'Search across all RootEco categories and occasions. Looking for something custom? Our gifting team can source it.',
+  });
   return (
     <>
       <PageHero
-        eyebrow="Search"
-        title="Find the right gift, faster"
-        subtitle="Search across all RootEco categories and occasions. Looking for something custom? Our gifting team can source it."
+        eyebrow={hero.eyebrow}
+        title={hero.title}
+        subtitle={hero.subtitle}
         crumbs={[{ label: 'Search' }]}
       />
       <Suspense

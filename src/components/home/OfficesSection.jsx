@@ -128,15 +128,15 @@ const Card = styled.div`
   }
 `;
 
-export default function OfficesSection() {
+export default function OfficesSection({ content = {} }) {
   return (
     <Section style={{ background: theme.colors.cream }}>
       <Container>
         <Reveal>
           <SectionHead>
-            <Eyebrow>Our Offices</Eyebrow>
-            <h2>Plan your in-person meet at ease across our offices</h2>
-            <p>Demo office locations shown — addresses will be updated soon.</p>
+            <Eyebrow>{content.eyebrow || 'Our Offices'}</Eyebrow>
+            <h2>{content.heading || 'Plan your in-person meet at ease across our offices'}</h2>
+            <p>{content.body || 'Demo office locations shown — addresses will be updated soon.'}</p>
           </SectionHead>
         </Reveal>
         <Grid>

@@ -6,6 +6,9 @@ import { ArrowRight, MessageSquareQuote, Quote, Star } from 'lucide-react';
 import theme from '@/styles/theme';
 import { ButtonLink, Container, Section } from '@/components/common/ui';
 import PageHero from '@/components/common/PageHero';
+import CmsSections from '@/components/pages/CmsSections';
+import { isSectionVisible } from '@/lib/cms';
+import { layoutDefaults, sectionLayout, sectionLayoutKey } from '@/lib/pages/layouts';
 
 const DemoBanner = styled.div`
   display: flex;
@@ -131,77 +134,116 @@ const Invite = styled.div`
   }
 `;
 
-export default function WallOfLovePage({ testimonials = [] }) {
+function WallHero({ content }) {
   return (
-    <>
-      <PageHero
-        eyebrow="Wall of Love"
-        title="Gifting stories we'd love to hear"
-        subtitle="Stories from teams who trusted RootEco with their gifting moments — from onboarding kits to festival hampers."
-        crumbs={[{ label: 'Wall of Love' }]}
-      />
-
-      <Section>
-        <Container>
-          <DemoBanner>
-            <MessageSquareQuote size={18} />
-            <span>
-              <strong>Demo content notice:</strong> the eight reviews below are fictional
-              placeholders created for layout preview. We don&apos;t display invented customer
-              names, company logos or ratings as real endorsements.
-            </span>
-          </DemoBanner>
-
-          <Grid>
-            {testimonials.map((t) => (
-              <Card key={t.id}>
-                <Quote className="qm" size={28} />
-                <blockquote>“{t.review}”</blockquote>
-                <div className="stars" aria-label={`${t.rating} out of 5 stars (demo)`}>
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star key={i} />
-                  ))}
-                </div>
-                <figcaption>
-                  <span className="avatar">
-                    {t.client.charAt(0)}
-                    {t.role.charAt(0)}
-                  </span>
-                  <div>
-                    <strong>
-                      {t.client}, {t.role}
-                    </strong>
-                    <span>{t.company} · Demo review</span>
-                  </div>
-                </figcaption>
-              </Card>
-            ))}
-          </Grid>
-
-          <Invite>
-            <div>
-              <h2>Planning your own gifting moment?</h2>
-              <p>
-                See how it feels to work with RootEco — start with a curated quote or build a hamper
-                exactly the way you want it.
-              </p>
-            </div>
-            <div className="cta">
-              <ButtonLink href="/get-a-quote" $variant="gold">
-                Start a Quote <ArrowRight size={16} />
-              </ButtonLink>
-            </div>
-          </Invite>
-
-          <p style={{ textAlign: 'center', fontSize: 13, color: theme.colors.muted, marginTop: 22 }}>
-            Have feedback on this demo?{' '}
-            <Link href="/contact" style={{ color: theme.colors.forest, fontWeight: 600 }}>
-              Tell us here
-            </Link>
-            .
-          </p>
-        </Container>
-      </Section>
-    </>
+    <PageHero
+      eyebrow={content.eyebrow || 'Wall of Love'}
+      title={content.heading || "Gifting stories we'd love to hear"}
+      subtitle={
+        content.body ||
+        'Stories from teams who trusted RootEco with their gifting moments — from onboarding kits to festival hampers.'
+      }
+      crumbs={[{ label: 'Wall of Love' }]}
+    />
   );
+}
+
+function WallGrid({ testimonials, content }) {
+  return (
+    <Section style={{ paddingBottom: 0 }}>
+      <Container>
+        <DemoBanner>
+          <MessageSquareQuote size={18} />
+          <span>
+            <strong>{content.heading || 'Demo content notice'}:</strong>{' '}
+            {content.body ||
+              "the eight reviews below are fictional placeholders created for layout preview. We don't display invented customer names, company logos or ratings as real endorsements."}
+          </span>
+        </DemoBanner>
+
+        <Grid>
+          {testimonials.map((t) => (
+            <Card key={t.id}>
+              <Quote className="qm" size={28} />
+              <blockquote>“{t.review}”</blockquote>
+              <div className="stars" aria-label={`${t.rating} out of 5 stars (demo)`}>
+                {Array.from({ length: t.rating }).map((_, i) => (
+                  <Star key={i} />
+                ))}
+              </div>
+              <figcaption>
+                <span className="avatar">
+                  {t.client.charAt(0)}
+                  {t.role.charAt(0)}
+                </span>
+                <div>
+                  <strong>
+                    {t.client}, {t.role}
+                  </strong>
+                  <span>{t.company} · Demo review</span>
+                </div>
+              </figcaption>
+            </Card>
+          ))}
+        </Grid>
+      </Container>
+    </Section>
+  );
+}
+
+function WallInvite({ content }) {
+  return (
+    <Section style={{ paddingTop: 0 }}>
+      <Container>
+        <Invite>
+          <div>
+            <h2>{content.heading || 'Planning your own gifting moment?'}</h2>
+            <p>
+              {content.body ||
+                'See how it feels to work with RootEco — start with a curated quote or build a hamper exactly the way you want it.'}
+            </p>
+          </div>
+          <div className="cta">
+            <ButtonLink href={content.href || '/get-a-quote'} $variant="gold">
+              {content.label || 'Start a Quote'} <ArrowRight size={16} />
+            </ButtonLink>
+          </div>
+        </Invite>
+
+        <p style={{ textAlign: 'center', fontSize: 13, color: theme.colors.muted, marginTop: 22 }}>
+          Have feedback on this demo?{' '}
+          <Link href="/contact" style={{ color: theme.colors.forest, fontWeight: 600 }}>
+            Tell us here
+          </Link>
+          .
+        </p>
+      </Container>
+    </Section>
+  );
+}
+
+const RENDERERS = {
+  'wall-hero': WallHero,
+  'wall-grid': WallGrid,
+  'wall-invite': WallInvite,
+};
+
+export default function WallOfLovePage({ testimonials = [], sections }) {
+  const list = (
+    Array.isArray(sections) && sections.length ? sections : layoutDefaults('wall-of-love')
+  ).filter(isSectionVisible);
+  return list.map((section) => {
+    const layout = sectionLayout(section);
+    const content = {
+      eyebrow: section.data?.subheading || '',
+      heading: section.heading || '',
+      body: section.body || '',
+      image: section.image || '',
+      ...(section.data || {}),
+    };
+    const key = section.id || sectionLayoutKey(section) || layout;
+    const Block = RENDERERS[layout];
+    if (!Block) return <CmsSections key={key} sections={[section]} />;
+    return <Block key={key} content={content} testimonials={testimonials} />;
+  });
 }

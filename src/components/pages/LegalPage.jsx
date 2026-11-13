@@ -203,14 +203,15 @@ const Related = styled.div`
   }
 `;
 
-export default function LegalPage({ title, subtitle, updated, intro, sections, related = [] }) {
+export default function LegalPage({ title, subtitle, updated, intro, sections, related = [], hero = {} }) {
+  const heroTitle = hero.title || title;
   return (
     <>
       <PageHero
-        eyebrow="Legal"
-        title={title}
-        subtitle={subtitle}
-        crumbs={[{ label: title }]}
+        eyebrow={hero.eyebrow || 'Legal'}
+        title={heroTitle}
+        subtitle={hero.subtitle || subtitle}
+        crumbs={[{ label: heroTitle }]}
       />
 
       <Section>

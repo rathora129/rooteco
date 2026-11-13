@@ -1,6 +1,7 @@
 import prisma from '@/lib/prisma';
 import { getSettings } from '@/lib/settings';
 import { absoluteUrl } from '@/lib/seo';
+import { REGISTRY_SLUGS } from '@/lib/pages/registry';
 
 const STATIC_PATHS = [
   { path: '/', priority: 1, changeFrequency: 'daily' },
@@ -20,7 +21,7 @@ const STATIC_PATHS = [
   { path: '/shipping-and-refund-policy', priority: 0.3, changeFrequency: 'yearly' },
 ];
 
-const BUILT_IN_PAGES = new Set(['home', 'about', 'contact']);
+const BUILT_IN_PAGES = REGISTRY_SLUGS;
 
 export const dynamic = 'force-dynamic';
 

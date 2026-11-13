@@ -86,14 +86,14 @@ const swagCards = [
   },
 ];
 
-export function SwagIsAlways() {
+export function SwagIsAlways({ content = {} }) {
   return (
     <Section>
       <Container>
         <Reveal>
           <SectionHead>
-            <Eyebrow>RootEco is Always</Eyebrow>
-            <h2>Gifting, elevated</h2>
+            <Eyebrow>{content.eyebrow || 'RootEco is Always'}</Eyebrow>
+            <h2>{content.heading || 'Gifting, elevated'}</h2>
           </SectionHead>
         </Reveal>
         <SwagGrid>
@@ -157,7 +157,7 @@ const Points = styled.ul`
   }
 `;
 
-export function CorporateMadeEasy() {
+export function CorporateMadeEasy({ content = {} }) {
   return (
     <Section style={{ background: '#fff' }}>
       <Container>
@@ -174,13 +174,13 @@ export function CorporateMadeEasy() {
           </Reveal>
           <Reveal delay={0.1}>
             <div>
-              <Eyebrow>For Teams Everywhere</Eyebrow>
+              <Eyebrow>{content.eyebrow || 'For Teams Everywhere'}</Eyebrow>
               <h2 style={{ fontSize: 'clamp(26px, 3.4vw, 40px)', color: theme.colors.forest, margin: '12px 0 14px' }}>
-                Corporate Gifting Made Easy for Teams Everywhere
+                {content.heading || 'Corporate Gifting Made Easy for Teams Everywhere'}
               </h2>
               <p style={{ color: theme.colors.muted }}>
-                Bulk gifting, custom merchandise, employee welcome kits and client appreciation —
-                one curated catalogue, one dedicated contact, one reliable delivery network.
+                {content.body ||
+                  'Bulk gifting, custom merchandise, employee welcome kits and client appreciation — one curated catalogue, one dedicated contact, one reliable delivery network.'}
               </p>
               <Points>
                 <li><Check size={18} /> Curated solutions for every budget per gift</li>
@@ -213,16 +213,16 @@ export function CorporateMadeEasy() {
 
 /* ---------- Section 16: FAQ ---------- */
 
-export function HomeFaq({ faqs = [], email = 'hello@rooteco.example.com' }) {
+export function HomeFaq({ faqs = [], email = 'hello@rooteco.example.com', content = {} }) {
   return (
     <Section>
       <Container style={{ maxWidth: 820 }}>
         <Reveal>
           <SectionHead>
-            <Eyebrow>Help Center</Eyebrow>
-            <h2>Frequently Asked Questions</h2>
+            <Eyebrow>{content.eyebrow || 'Help Center'}</Eyebrow>
+            <h2>{content.heading || 'Frequently Asked Questions'}</h2>
             <p>
-              If you have any other questions, please email us at{' '}
+              {content.body || 'If you have any other questions, please email us at'}{' '}
               <a href={`mailto:${email}`} style={{ color: theme.colors.forest, fontWeight: 600 }}>
                 {email}
               </a>

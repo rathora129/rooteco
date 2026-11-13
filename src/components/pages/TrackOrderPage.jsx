@@ -258,7 +258,7 @@ const fmt = (iso) =>
     ? new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
 
-export default function TrackOrderPage({ initialNumber = '', contact = {} }) {
+export default function TrackOrderPage({ initialNumber = '', contact = {}, hero = {} }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -298,9 +298,12 @@ export default function TrackOrderPage({ initialNumber = '', contact = {} }) {
   return (
     <>
       <PageHero
-        eyebrow="Order tracking"
-        title="Track your order"
-        subtitle="Enter your order reference and the email used at checkout to see the latest status from our workshop."
+        eyebrow={hero.eyebrow || 'Order tracking'}
+        title={hero.title || 'Track your order'}
+        subtitle={
+          hero.subtitle ||
+          'Enter your order reference and the email used at checkout to see the latest status from our workshop.'
+        }
         crumbs={[{ label: 'Track Order' }]}
       />
 

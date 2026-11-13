@@ -1,7 +1,6 @@
 import LegalPage from '@/components/pages/LegalPage';
-import CmsSections from '@/components/pages/CmsSections';
 import { getPage } from '@/lib/catalog';
-import { visibleSections } from '@/lib/cms';
+import { heroFromSections } from '@/lib/pages/layouts';
 
 export const metadata = {
   title: 'Privacy Policy',
@@ -115,17 +114,20 @@ const related = [
 
 export default async function PrivacyPolicyRoute() {
   const page = await getPage('privacy-policy');
+  const hero = heroFromSections(page?.sections, {
+    eyebrow: 'Legal',
+    title: 'Privacy Policy',
+    subtitle: 'What the demo collects, where it lives, and how you stay in control.',
+  });
   return (
-    <>
-      <LegalPage
-        title="Privacy Policy"
-        subtitle="What the demo collects, where it lives, and how you stay in control."
-        updated="2 November 2026"
-        intro="RootEco handles gifting programmes for teams, so privacy matters — recipient lists, corporate addresses and personal messages. This page explains exactly what this demonstration site stores, which is mostly in your own browser, and what a live deployment should cover."
-        sections={sections}
-        related={related}
-      />
-      <CmsSections sections={visibleSections(page?.sections)} />
-    </>
+    <LegalPage
+      title="Privacy Policy"
+      subtitle="What the demo collects, where it lives, and how you stay in control."
+      updated="2 November 2026"
+      intro="RootEco handles gifting programmes for teams, so privacy matters — recipient lists, corporate addresses and personal messages. This page explains exactly what this demonstration site stores, which is mostly in your own browser, and what a live deployment should cover."
+      sections={sections}
+      related={related}
+      hero={hero}
+    />
   );
 }

@@ -4,19 +4,9 @@ import { visibleSections } from '@/lib/cms';
 import { getSettings } from '@/lib/settings';
 import { absoluteUrl } from '@/lib/seo';
 import CmsPage from '@/components/pages/CmsPage';
+import { BUILT_IN_PATH_BY_SLUG } from '@/lib/pages/registry';
 
-const BUILT_IN_REDIRECTS = {
-  home: '/',
-  about: '/about',
-  contact: '/contact',
-  faq: '/faq',
-  blog: '/blog',
-  collections: '/collections',
-  'wall-of-love': '/wall-of-love',
-  'privacy-policy': '/privacy-policy',
-  'terms-and-conditions': '/terms-and-conditions',
-  'shipping-and-refund-policy': '/shipping-and-refund-policy',
-};
+const BUILT_IN_REDIRECTS = BUILT_IN_PATH_BY_SLUG;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;

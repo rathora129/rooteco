@@ -79,7 +79,7 @@ const Card = styled(Link)`
   }
 `;
 
-export default function FestivalGifting({ collections = [] }) {
+export default function FestivalGifting({ collections = [], content = {} }) {
   if (!collections.length) return null;
   return (
     <Section as="div" style={{ padding: 0 }}>
@@ -88,9 +88,12 @@ export default function FestivalGifting({ collections = [] }) {
           <Container>
             <Reveal>
               <SectionHead>
-                <Eyebrow>Festival Gifting</Eyebrow>
-                <h2>Gifts that keep conversation going</h2>
-                <p>Festive hampers, Diwali gifting and celebration boxes — crafted for teams and clients.</p>
+                <Eyebrow>{content.eyebrow || 'Festival Gifting'}</Eyebrow>
+                <h2>{content.heading || 'Gifts that keep conversation going'}</h2>
+                <p>
+                  {content.body ||
+                    'Festive hampers, Diwali gifting and celebration boxes — crafted for teams and clients.'}
+                </p>
               </SectionHead>
             </Reveal>
             <Grid>

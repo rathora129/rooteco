@@ -13,10 +13,15 @@ export const GET = handleRoute(async (request) => {
   const status = searchParams.get('status');
   const source = searchParams.get('source');
   const due = searchParams.get('due');
+  const sources = (source || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
 
   const where = {
     ...(status ? { status } : {}),
-    ...(source ? { source } : {}),
+    ...(sources.length === 1 ? { source: sources[0] } : {}),
+    ...(sources.length > 1 ? { source: { in: sources } } : {}),
     ...(due === 'true' ? { followUpDate: { lte: new Date() }, status: { notIn: ['won', 'lost'] } } : {}),
     ...(params.q
       ? {

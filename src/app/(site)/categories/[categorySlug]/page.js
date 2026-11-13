@@ -33,9 +33,7 @@ async function CategoryContent({ params }) {
   ]);
   if (!category) notFound();
 
-  return (
-    <CategoryListing category={category} products={products} categories={categories} />
-  );
+  return <CategoryListing category={category} products={products} categories={categories} />;
 }
 
 export default function CategoryPage({ params }) {

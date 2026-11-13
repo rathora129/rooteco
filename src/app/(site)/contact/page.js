@@ -1,7 +1,5 @@
 import ContactPage from '@/components/pages/ContactPage';
-import CmsSections from '@/components/pages/CmsSections';
 import { getPage } from '@/lib/catalog';
-import { visibleSections } from '@/lib/cms';
 import { getSettings } from '@/lib/settings';
 import { absoluteUrl } from '@/lib/seo';
 
@@ -18,10 +16,5 @@ export async function generateMetadata() {
 
 export default async function ContactRoute() {
   const [settings, page] = await Promise.all([getSettings(), getPage('contact')]);
-  return (
-    <>
-      <ContactPage contact={settings.contact} />
-      <CmsSections sections={visibleSections(page?.sections)} />
-    </>
-  );
+  return <ContactPage contact={settings.contact} sections={page?.sections} />;
 }

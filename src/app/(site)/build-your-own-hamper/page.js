@@ -1,6 +1,7 @@
 import PageHero from '@/components/common/PageHero';
 import HamperBuilder from '@/components/hamper/HamperBuilder';
-import { getProducts } from '@/lib/catalog';
+import { getPage, getProducts } from '@/lib/catalog';
+import { heroFromSections } from '@/lib/pages/layouts';
 
 export const metadata = {
   title: 'Build Your Own Hamper',
@@ -9,13 +10,19 @@ export const metadata = {
 };
 
 export default async function BuildHamperPage() {
-  const products = await getProducts();
+  const [products, page] = await Promise.all([getProducts(), getPage('build-your-own-hamper')]);
+  const hero = heroFromSections(page?.sections, {
+    eyebrow: 'Make it yours',
+    title: 'Build Your Own Hamper',
+    subtitle:
+      'Choose a box, fill it with gifts, add your branding and a gift note. We curate, pack and deliver — with a mock-up approval before production.',
+  });
   return (
     <>
       <PageHero
-        eyebrow="Make it yours"
-        title="Build Your Own Hamper"
-        subtitle="Choose a box, fill it with gifts, add your branding and a gift note. We curate, pack and deliver — with a mock-up approval before production."
+        eyebrow={hero.eyebrow}
+        title={hero.title}
+        subtitle={hero.subtitle}
         crumbs={[{ label: 'Build Your Own Hamper' }]}
       />
       <HamperBuilder products={products} />

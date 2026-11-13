@@ -128,7 +128,7 @@ const FCard = styled.div`
 
 const iconMap = { BadgeCheck, Boxes, Heart, Gift, Truck, Headset };
 
-export default function AllFeatures() {
+export default function AllFeatures({ content = {} }) {
   return (
     <Section style={{ background: theme.colors.forest }}>
       <Container>
@@ -151,9 +151,12 @@ export default function AllFeatures() {
           </Reveal>
           <Reveal delay={0.12}>
             <Copy>
-              <Eyebrow>All Features</Eyebrow>
-              <h2>Everything your gifting program needs</h2>
-              <p>One partner for design, branding, packaging and delivery — so your team can focus on the celebration.</p>
+              <Eyebrow>{content.eyebrow || 'All Features'}</Eyebrow>
+              <h2>{content.heading || 'Everything your gifting program needs'}</h2>
+              <p>
+                {content.body ||
+                  'One partner for design, branding, packaging and delivery — so your team can focus on the celebration.'}
+              </p>
               <Cards>
                 {features.map((f) => {
                   const Icon = iconMap[f.icon] || Gift;

@@ -1,5 +1,6 @@
 import CategoriesIndex from '@/components/categories/CategoriesIndex';
-import { getCategories } from '@/lib/catalog';
+import { getCategories, getPage } from '@/lib/catalog';
+import { heroFromSections } from '@/lib/pages/layouts';
 
 export const metadata = {
   title: 'Shop by Category',
@@ -8,6 +9,12 @@ export const metadata = {
 };
 
 export default async function CategoriesPage() {
-  const categories = await getCategories();
-  return <CategoriesIndex categories={categories} />;
+  const [categories, page] = await Promise.all([getCategories(), getPage('categories')]);
+  const hero = heroFromSections(page?.sections, {
+    eyebrow: 'The RootEco Catalogue',
+    title: 'Find the perfect gift for every moment',
+    subtitle:
+      'Ten curated categories — from first-day welcome kits to festival hampers and executive gift sets. Every product can be branded, personalized and delivered pan India.',
+  });
+  return <CategoriesIndex categories={categories} hero={hero} />;
 }

@@ -7,6 +7,9 @@ import { ArrowRight } from 'lucide-react';
 import PageHero from '@/components/common/PageHero';
 import { Container, Section } from '@/components/common/ui';
 import theme from '@/styles/theme';
+import CmsSections from '@/components/pages/CmsSections';
+import { isSectionVisible } from '@/lib/cms';
+import { layoutDefaults, sectionLayout, sectionLayoutKey } from '@/lib/pages/layouts';
 
 const Grid = styled.div`
   display: grid;
@@ -67,50 +70,81 @@ const Card = styled(Link)`
   }
 `;
 
-export default function CollectionsIndex({ collections = [] }) {
+function CollectionsHero({ content }) {
   return (
-    <>
-      <PageHero
-        eyebrow="Collections"
-        title="Curated gifting collections"
-        subtitle="Thoughtfully assembled edits for festivals, onboarding, celebrations and everyday appreciation."
-        crumbs={[{ label: 'Collections' }]}
-      />
-      <Section>
-        <Container>
-          {collections.length === 0 ? (
-            <p style={{ color: theme.colors.muted, textAlign: 'center' }}>
-              Collections are being curated. Browse the{' '}
-              <Link href="/products" style={{ color: theme.colors.forest, fontWeight: 600 }}>
-                full catalogue
-              </Link>{' '}
-              in the meantime.
-            </p>
-          ) : (
-            <Grid>
-              {collections.map((collection) => (
-                <Card key={collection.slug} href={`/collections/${collection.slug}`}>
-                  {collection.image && (
-                    <Image
-                      src={collection.image}
-                      alt={collection.name}
-                      fill
-                      sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw"
-                    />
-                  )}
-                  <div className="body">
-                    <h2>{collection.name}</h2>
-                    {collection.tagline && <p>{collection.tagline}</p>}
-                    <span className="go">
-                      Explore collection <ArrowRight size={14} />
-                    </span>
-                  </div>
-                </Card>
-              ))}
-            </Grid>
-          )}
-        </Container>
-      </Section>
-    </>
+    <PageHero
+      eyebrow={content.eyebrow || 'Collections'}
+      title={content.heading || 'Curated gifting collections'}
+      subtitle={
+        content.body ||
+        'Thoughtfully assembled edits for festivals, onboarding, celebrations and everyday appreciation.'
+      }
+      crumbs={[{ label: 'Collections' }]}
+    />
   );
+}
+
+function CollectionGrid({ collections }) {
+  return (
+    <Section>
+      <Container>
+        {collections.length === 0 ? (
+          <p style={{ color: theme.colors.muted, textAlign: 'center' }}>
+            Collections are being curated. Browse the{' '}
+            <Link href="/products" style={{ color: theme.colors.forest, fontWeight: 600 }}>
+              full catalogue
+            </Link>{' '}
+            in the meantime.
+          </p>
+        ) : (
+          <Grid>
+            {collections.map((collection) => (
+              <Card key={collection.slug} href={`/collections/${collection.slug}`}>
+                {collection.image && (
+                  <Image
+                    src={collection.image}
+                    alt={collection.name}
+                    fill
+                    sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw"
+                  />
+                )}
+                <div className="body">
+                  <h2>{collection.name}</h2>
+                  {collection.tagline && <p>{collection.tagline}</p>}
+                  <span className="go">
+                    Explore collection <ArrowRight size={14} />
+                  </span>
+                </div>
+              </Card>
+            ))}
+          </Grid>
+        )}
+      </Container>
+    </Section>
+  );
+}
+
+const RENDERERS = {
+  'collections-hero': CollectionsHero,
+  'collection-grid': CollectionGrid,
+};
+
+export default function CollectionsIndex({ collections = [], sections }) {
+  const list = (
+    Array.isArray(sections) && sections.length ? sections : layoutDefaults('collections')
+  ).filter(isSectionVisible);
+  return list.map((section) => {
+    const layout = sectionLayout(section);
+    const content = {
+      eyebrow: section.data?.subheading || '',
+      heading: section.heading || '',
+      body: section.body || '',
+      image: section.image || '',
+      ...(section.data || {}),
+    };
+    const key = section.id || sectionLayoutKey(section) || layout;
+    const Block = RENDERERS[layout];
+    if (!Block) return <CmsSections key={key} sections={[section]} />;
+    return <Block key={key} content={content} collections={collections} />;
+  });
 }

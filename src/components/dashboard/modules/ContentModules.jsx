@@ -1,378 +1,352 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import Link from 'next/link';
-import GenericModule from '@/components/dashboard/GenericModule';
-import { Badge, StatusBadge } from '@/components/dashboard/ui';
+import { BookOpen, CircleHelp, Megaphone, Quote, Star } from 'lucide-react';
+import { StatusBadge } from '@/components/dashboard/ui';
+import Workspace, { DetailList, DetailRow, DetailSection } from '@/components/dashboard/Workspace';
 import { formatDate } from '@/components/dashboard/hooks';
-import theme from '@/styles/theme';
-
-function Thumb({ src, alt, wide = false }) {
-  return src ? (
-    <img
-      src={src}
-      alt={alt || ''}
-      loading="lazy"
-      decoding="async"
-      style={{
-        width: wide ? 84 : 40,
-        height: 40,
-        borderRadius: 7,
-        objectFit: 'cover',
-        border: '1px solid var(--re-line)',
-      }}
-    />
-  ) : (
-    <span
-      style={{
-        display: 'inline-grid',
-        placeItems: 'center',
-        width: wide ? 84 : 40,
-        height: 40,
-        borderRadius: 7,
-        background: 'rgba(255, 255, 255, 0.05)',
-        color: 'var(--re-muted)',
-        fontSize: 10,
-      }}
-    >
-      No img
-    </span>
-  );
-}
 
 const STATUS_OPTIONS = [
   { value: 'published', label: 'Published' },
   { value: 'draft', label: 'Draft' },
 ];
 
-export function PagesModule() {
-  const fields = [
-    { name: 'title', label: 'Page title', required: true },
-    { name: 'slug', label: 'Slug', hint: 'Auto-generated from the title if blank' },
-    {
-      name: 'status',
-      label: 'Status',
-      type: 'select',
-      options: STATUS_OPTIONS,
-    },
-    { name: 'content', label: 'Main content', type: 'textarea', tall: true, full: true },
-    { name: 'sections', label: 'Content sections', type: 'sections', full: true },
-    { name: 'seoTitle', label: 'SEO title' },
-    { name: 'seoDescription', label: 'SEO description', type: 'textarea' },
-  ];
-
+function Thumb({ src, label, size = 34 }) {
   return (
-    <GenericModule
-      eyebrow="Content"
-      title="Website pages"
-      description="Build CMS-driven pages with ordered sections, SEO metadata and draft or published visibility."
-      endpoint="/api/content/pages"
-      columns={[
-        {
-          key: 'title',
-          label: 'Page',
-          render: (row) => (
-            <div>
-              <Link href={`/pages/${row.slug}`} target="_blank" rel="noreferrer" className="strong" style={{ color: theme.colors.forest }}>
-                {row.title}
-              </Link>
-              <div className="muted">/{row.slug}</div>
-            </div>
-          ),
-        },
-        {
-          key: 'sections',
-          label: 'Sections',
-          render: (row) => <span>{row.sections?.length || 0}</span>,
-        },
-        { key: 'status', label: 'Status', render: (row) => <StatusBadge value={row.status} /> },
-        {
-          key: 'updatedAt',
-          label: 'Updated',
-          render: (row) => <span className="muted">{formatDate(row.updatedAt)}</span>,
-        },
-      ]}
-      fields={fields}
-      rowActions={(row) => (
-        <Link
-          href={`/dashboard/pages/${row.id}`}
-          title="Open page builder"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            padding: '6px 10px',
-            borderRadius: 8,
-            border: `1px solid ${theme.colors.line}`,
-            background: 'rgba(240, 162, 59, 0.1)',
-            color: theme.colors.ink,
-            fontSize: 12,
-            fontWeight: 600,
-          }}
-        >
-          Build
-        </Link>
-      )}
-      defaults={{ status: 'published', sections: [] }}
-      filters={[{ name: 'status', label: 'All statuses', options: STATUS_OPTIONS }]}
-      searchPlaceholder="Search pages…"
-      emptyTitle="No pages yet"
-      emptyText="Create reusable content pages such as About, Sustainability or Gift Guides."
-    />
+    <span
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 8,
+        background: src ? `#fff url(${src}) center / cover no-repeat` : 'var(--dash-panel-3)',
+        display: 'grid',
+        placeItems: 'center',
+        color: 'var(--dash-faint)',
+        fontSize: 10,
+        fontWeight: 700,
+        flexShrink: 0,
+        border: '1px solid var(--dash-line-soft)',
+      }}
+    >
+      {!src && String(label || '?').slice(0, 2).toUpperCase()}
+    </span>
+  );
+}
+
+function NameCell({ image, name, sub }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+      <Thumb src={image} label={name} />
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontWeight: 600, fontSize: 12.5, color: 'var(--dash-ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {name}
+        </div>
+        {sub && <div style={{ color: 'var(--dash-faint)', fontSize: 10.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+function Rating({ value }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--dash-accent)', fontSize: 12, fontWeight: 600 }}>
+      <Star size={12} fill="currentColor" /> {value || 0}
+    </span>
   );
 }
 
 export function BannersModule() {
   const fields = [
-    { name: 'kicker', label: 'Kicker / eyebrow' },
-    { name: 'title', label: 'Headline', required: true },
+    { name: 'title', label: 'Banner title', required: true, section: 'Content', full: true },
+    { name: 'kicker', label: 'Kicker', placeholder: 'Diwali 2026' },
     { name: 'subtitle', label: 'Subtitle', type: 'textarea', full: true },
-    { name: 'desktopImage', label: 'Desktop image', type: 'image' },
-    { name: 'mobileImage', label: 'Mobile image', type: 'image' },
-    { name: 'primaryLabel', label: 'Primary button label', required: true },
-    { name: 'primaryUrl', label: 'Primary button link', required: true, placeholder: '/products' },
+    { name: 'desktopImage', label: 'Desktop image', type: 'image', required: true, section: 'Creative' },
+    { name: 'mobileImage', label: 'Mobile image', type: 'image', hint: 'Falls back to desktop image when empty' },
+    { name: 'accent', label: 'Accent', type: 'select', options: [{ value: 'gold', label: 'Gold' }, { value: 'green', label: 'Green' }, { value: 'cream', label: 'Cream' }] },
+    { name: 'primaryLabel', label: 'Primary button label', required: true, section: 'Actions' },
+    { name: 'primaryUrl', label: 'Primary button URL', required: true, placeholder: '/collections/diwali' },
     { name: 'secondaryLabel', label: 'Secondary button label' },
-    { name: 'secondaryUrl', label: 'Secondary button link' },
-    {
-      name: 'accent',
-      label: 'Accent',
-      type: 'select',
-      options: [
-        { value: 'gold', label: 'Gold' },
-        { value: 'green', label: 'Green' },
-        { value: 'cream', label: 'Cream' },
-      ],
-    },
-    { name: 'order', label: 'Slide order', type: 'number', min: 0 },
+    { name: 'secondaryUrl', label: 'Secondary button URL', placeholder: '/products' },
+    { name: 'order', label: 'Sort order', type: 'number', min: 0, section: 'Schedule' },
     { name: 'startDate', label: 'Starts', type: 'date' },
     { name: 'endDate', label: 'Ends', type: 'date' },
-    { name: 'active', label: 'Visibility', type: 'checkbox', checkboxLabel: 'Active on the storefront' },
+    { name: 'active', label: 'Active', type: 'checkbox', checkboxLabel: 'Show this banner on the storefront' },
+  ];
+
+  const columns = [
+    { key: 'title', label: 'Banner', width: 300, render: (row) => <NameCell image={row.desktopImage} name={row.title} sub={row.kicker || row.subtitle} /> },
+    { key: 'primary', label: 'Primary action', render: (row) => <span>{row.primaryLabel} → <span className="muted">{row.primaryUrl}</span></span> },
+    {
+      key: 'schedule',
+      label: 'Schedule',
+      render: (row) => (row.startDate || row.endDate ? `${formatDate(row.startDate)} – ${formatDate(row.endDate)}` : 'Always on'),
+    },
+    { key: 'order', label: 'Order' },
+    { key: 'active', label: 'Status', render: (row) => <StatusBadge value={row.active ? 'active' : 'inactive'} /> },
   ];
 
   return (
-    <GenericModule
-      eyebrow="Content"
-      title="Banners & sliders"
-      description="Control homepage hero slides, campaign imagery, calls to action and scheduled visibility."
+    <Workspace
+      eyebrow="Website Studio"
+      title="Banners"
+      description="Hero banners and promotional sliders. Control the creative, call to action and the exact window each banner is live."
       endpoint="/api/banners"
-      columns={[
-        {
-          key: 'image',
-          label: 'Preview',
-          width: 100,
-          render: (row) => <Thumb src={row.desktopImage} alt={row.title} wide />,
-        },
-        {
-          key: 'title',
-          label: 'Slide',
-          render: (row) => (
-            <div>
-              <div className="strong">{row.title}</div>
-              <div className="muted">{row.kicker || '—'}</div>
-            </div>
-          ),
-        },
-        {
-          key: 'schedule',
-          label: 'Schedule',
-          render: (row) => (
-            <span className="muted">
-              {row.startDate ? formatDate(row.startDate) : 'Anytime'} → {row.endDate ? formatDate(row.endDate) : 'Ongoing'}
-            </span>
-          ),
-        },
-        { key: 'order', label: 'Order', render: (row) => row.order ?? 0 },
-        {
-          key: 'active',
-          label: 'Status',
-          render: (row) => <Badge $tone={row.active ? 'green' : 'neutral'}>{row.active ? 'Active' : 'Inactive'}</Badge>,
-        },
-      ]}
+      itemLabel="banner"
+      columns={columns}
       fields={fields}
-      defaults={{ accent: 'gold', order: 0, active: true }}
-      filters={[
-        {
-          name: 'active',
-          label: 'All banners',
-          options: [
-            { value: 'true', label: 'Active only' },
-            { value: 'false', label: 'Inactive only' },
-          ],
-        },
+      defaults={{ active: true, accent: 'gold', order: 0 }}
+      filters={[{ name: 'active', label: 'All banners', options: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] }]}
+      sortOptions={[
+        { value: 'order', label: 'Display order', sort: 'order', order: 'asc' },
+        { value: 'newest', label: 'Newest first', sort: 'createdAt', order: 'desc' },
       ]}
       searchPlaceholder="Search banners…"
+      createLabel="Add banner"
+      itemLabelPlural="banners"
       emptyTitle="No banners yet"
-      emptyText="Add a hero slide to control the first impression on the homepage."
+      emptyText="Create a banner to feature a campaign on the homepage."
+      emptyIcon={<Megaphone size={19} />}
+      viewModes={['table', 'grid']}
+      renderCard={(row) => (
+        <>
+          <span style={{ display: 'block', height: 120, background: row.desktopImage ? `#fff url(${row.desktopImage}) center / cover no-repeat` : 'var(--dash-panel-2)' }} />
+          <span style={{ display: 'block', padding: 12 }}>
+            <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>
+              <strong style={{ fontSize: 12.5, color: 'var(--dash-ink)' }}>{row.title}</strong>
+              <StatusBadge value={row.active ? 'active' : 'inactive'} />
+            </span>
+            <span style={{ display: 'block', marginTop: 5, fontSize: 11, color: 'var(--dash-faint)' }}>{row.kicker || row.subtitle || 'No kicker'}</span>
+          </span>
+        </>
+      )}
+      renderDetail={(row) => (
+        <>
+          {row.desktopImage && (
+            <div style={{ height: 170, borderRadius: 10, marginBottom: 18, background: `#fff url(${row.desktopImage}) center / cover no-repeat`, border: '1px solid var(--dash-line)' }} />
+          )}
+          <DetailSection title="Banner">
+            <DetailList>
+              <DetailRow label="Title">{row.title}</DetailRow>
+              <DetailRow label="Kicker">{row.kicker || '—'}</DetailRow>
+              <DetailRow label="Subtitle">{row.subtitle || '—'}</DetailRow>
+              <DetailRow label="Status"><StatusBadge value={row.active ? 'active' : 'inactive'} /></DetailRow>
+              <DetailRow label="Accent">{row.accent}</DetailRow>
+              <DetailRow label="Order">{row.order}</DetailRow>
+              <DetailRow label="Schedule">{row.startDate || row.endDate ? `${formatDate(row.startDate)} – ${formatDate(row.endDate)}` : 'Always on'}</DetailRow>
+            </DetailList>
+          </DetailSection>
+          <DetailSection title="Calls to action">
+            <DetailList>
+              <DetailRow label="Primary">{row.primaryLabel} → {row.primaryUrl}</DetailRow>
+              <DetailRow label="Secondary">{row.secondaryLabel ? `${row.secondaryLabel} → ${row.secondaryUrl}` : '—'}</DetailRow>
+            </DetailList>
+          </DetailSection>
+        </>
+      )}
     />
   );
 }
 
 export function BlogsModule() {
   const fields = [
-    { name: 'title', label: 'Post title', required: true },
-    { name: 'slug', label: 'Slug', hint: 'Auto-generated from the title if blank' },
-    { name: 'author', label: 'Author', placeholder: 'RootEco Team' },
+    { name: 'title', label: 'Post title', required: true, section: 'Article', full: true },
+    { name: 'slug', label: 'URL slug', hint: 'Auto-generated when blank' },
     { name: 'category', label: 'Category', placeholder: 'Gifting guides' },
-    { name: 'tags', label: 'Tags', type: 'tags', hint: 'Comma separated' },
-    { name: 'publishedAt', label: 'Publish date', type: 'date' },
-    {
-      name: 'status',
-      label: 'Status',
-      type: 'select',
-      options: STATUS_OPTIONS,
-    },
     { name: 'excerpt', label: 'Excerpt', type: 'textarea', full: true },
-    { name: 'content', label: 'Article body', type: 'textarea', tall: true, full: true },
-    { name: 'image', label: 'Featured image', type: 'image' },
-    { name: 'seoTitle', label: 'SEO title' },
-    { name: 'seoDescription', label: 'SEO description', type: 'textarea' },
+    { name: 'content', label: 'Article content', type: 'textarea', full: true, tall: true, placeholder: 'Write the article. Basic paragraphs and line breaks are preserved.' },
+    { name: 'image', label: 'Cover image', type: 'image', section: 'Media' },
+    { name: 'author', label: 'Author', placeholder: 'RootEco Team' },
+    { name: 'tags', label: 'Tags', type: 'tags', placeholder: 'corporate gifting, diwali' },
+    { name: 'publishedAt', label: 'Publish date', type: 'date' },
+    { name: 'status', label: 'Status', type: 'select', required: true, options: STATUS_OPTIONS, section: 'Publishing' },
+    { name: 'seoTitle', label: 'SEO title', full: true, section: 'Search & sharing' },
+    { name: 'seoDescription', label: 'SEO description', type: 'textarea', full: true },
+  ];
+
+  const columns = [
+    { key: 'title', label: 'Post', width: 320, render: (row) => <NameCell image={row.image} name={row.title} sub={`/blog/${row.slug}`} /> },
+    { key: 'category', label: 'Category', render: (row) => row.category || '—' },
+    { key: 'author', label: 'Author', render: (row) => row.author || 'RootEco Team' },
+    { key: 'status', label: 'Status', render: (row) => <StatusBadge value={row.status} /> },
+    { key: 'publishedAt', label: 'Published', render: (row) => formatDate(row.publishedAt) },
   ];
 
   return (
-    <GenericModule
-      eyebrow="Content"
-      title="Blogs"
-      description="Publish gifting guides, ideas and announcements with SEO metadata and scheduled publishing."
+    <Workspace
+      eyebrow="Marketing"
+      title="Blog"
+      description="Publish gifting guides, case studies and seasonal stories that bring organic traffic to the storefront."
       endpoint="/api/blogs"
-      columns={[
-        {
-          key: 'image',
-          label: '',
-          width: 68,
-          render: (row) => <Thumb src={row.image} alt={row.title} />,
-        },
-        {
-          key: 'title',
-          label: 'Post',
-          render: (row) => (
-            <div>
-              <Link href={`/blog/${row.slug}`} target="_blank" rel="noreferrer" className="strong" style={{ color: theme.colors.forest }}>
-                {row.title}
-              </Link>
-              <div className="muted">/{row.slug}</div>
-            </div>
-          ),
-        },
-        { key: 'category', label: 'Category', render: (row) => row.category || '—' },
-        { key: 'author', label: 'Author', render: (row) => row.author || '—' },
-        {
-          key: 'publishedAt',
-          label: 'Published',
-          render: (row) => <span className="muted">{formatDate(row.publishedAt || row.createdAt)}</span>,
-        },
-        { key: 'status', label: 'Status', render: (row) => <StatusBadge value={row.status} /> },
-      ]}
+      itemLabel="post"
+      columns={columns}
       fields={fields}
       defaults={{ status: 'draft', author: 'RootEco Team', tags: [] }}
       filters={[{ name: 'status', label: 'All statuses', options: STATUS_OPTIONS }]}
-      searchPlaceholder="Search posts…"
+      sortOptions={[
+        { value: 'published', label: 'Newest published', sort: 'publishedAt', order: 'desc' },
+        { value: 'title', label: 'Title A–Z', sort: 'title', order: 'asc' },
+        { value: 'newest', label: 'Recently created', sort: 'createdAt', order: 'desc' },
+      ]}
+      searchPlaceholder="Search posts by title, excerpt or category…"
+      createLabel="New post"
+      itemLabelPlural="posts"
       emptyTitle="No blog posts yet"
+      emptyText="Write your first article to start building organic search traffic."
+      emptyIcon={<BookOpen size={19} />}
+      liveHref={(row) => `/blog/${row.slug}`}
+      renderDetail={(row) => (
+        <>
+          {row.image && (
+            <div style={{ height: 160, borderRadius: 10, marginBottom: 18, background: `#fff url(${row.image}) center / cover no-repeat`, border: '1px solid var(--dash-line)' }} />
+          )}
+          <DetailSection title="Post">
+            <DetailList>
+              <DetailRow label="Title">{row.title}</DetailRow>
+              <DetailRow label="Slug">/blog/{row.slug}</DetailRow>
+              <DetailRow label="Category">{row.category || '—'}</DetailRow>
+              <DetailRow label="Author">{row.author || 'RootEco Team'}</DetailRow>
+              <DetailRow label="Status"><StatusBadge value={row.status} /></DetailRow>
+              <DetailRow label="Published">{formatDate(row.publishedAt)}</DetailRow>
+              <DetailRow label="Tags">{row.tags?.join(', ') || '—'}</DetailRow>
+            </DetailList>
+          </DetailSection>
+          {row.excerpt && <DetailSection title="Excerpt"><p style={{ fontSize: 12.5, color: 'var(--dash-muted)', lineHeight: 1.65 }}>{row.excerpt}</p></DetailSection>}
+          <DetailSection title="Content">
+            <p style={{ fontSize: 12.5, color: 'var(--dash-muted)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{row.content}</p>
+          </DetailSection>
+        </>
+      )}
+      exportName="blog-posts"
     />
   );
 }
 
 export function TestimonialsModule() {
   const fields = [
-    { name: 'client', label: 'Client name', required: true },
+    { name: 'client', label: 'Client name', required: true, section: 'Review' },
     { name: 'company', label: 'Company' },
     { name: 'designation', label: 'Designation' },
-    { name: 'rating', label: 'Rating (1–5)', type: 'number', min: 1, max: 5 },
-    { name: 'review', label: 'Review', type: 'textarea', tall: true, full: true, required: true },
-    { name: 'image', label: 'Client photo', type: 'image' },
-    { name: 'order', label: 'Display order', type: 'number', min: 0 },
-    {
-      name: 'status',
-      label: 'Status',
-      type: 'select',
-      options: STATUS_OPTIONS,
-    },
+    { name: 'rating', label: 'Rating', type: 'number', min: 1, max: 5, step: 1 },
+    { name: 'review', label: 'Review', type: 'textarea', full: true, required: true },
+    { name: 'image', label: 'Photo', type: 'image', section: 'Media' },
+    { name: 'order', label: 'Sort order', type: 'number', min: 0, section: 'Placement' },
+    { name: 'status', label: 'Status', type: 'select', required: true, options: STATUS_OPTIONS },
+  ];
+
+  const columns = [
+    { key: 'client', label: 'Client', width: 260, render: (row) => <NameCell image={row.image} name={row.client} sub={[row.designation, row.company].filter(Boolean).join(' · ')} /> },
+    { key: 'review', label: 'Review', render: (row) => <span style={{ display: 'block', maxWidth: 420, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--dash-muted)' }}>{row.review}</span> },
+    { key: 'rating', label: 'Rating', render: (row) => <Rating value={row.rating} /> },
+    { key: 'order', label: 'Order' },
+    { key: 'status', label: 'Status', render: (row) => <StatusBadge value={row.status} /> },
   ];
 
   return (
-    <GenericModule
-      eyebrow="Content"
+    <Workspace
+      eyebrow="Marketing"
       title="Testimonials"
-      description="Publish client praise on the homepage wall of love and the dedicated testimonial page."
+      description="Client proof for the wall of love and product pages. Keep ratings, attribution and photos accurate."
       endpoint="/api/testimonials"
-      columns={[
-        {
-          key: 'client',
-          label: 'Client',
-          render: (row) => (
-            <div>
-              <div className="strong">{row.client}</div>
-              <div className="muted">
-                {[row.designation, row.company].filter(Boolean).join(' · ') || '—'}
+      itemLabel="testimonial"
+      columns={columns}
+      fields={fields}
+      defaults={{ status: 'published', rating: 5, order: 0 }}
+      filters={[{ name: 'status', label: 'All statuses', options: STATUS_OPTIONS }]}
+      sortOptions={[
+        { value: 'order', label: 'Display order', sort: 'order', order: 'asc' },
+        { value: 'rating', label: 'Highest rated', sort: 'rating', order: 'desc' },
+        { value: 'newest', label: 'Newest first', sort: 'createdAt', order: 'desc' },
+      ]}
+      searchPlaceholder="Search testimonials…"
+      createLabel="Add testimonial"
+      itemLabelPlural="testimonials"
+      emptyTitle="No testimonials yet"
+      emptyText="Add a client review to build social proof."
+      emptyIcon={<Quote size={19} />}
+      renderDetail={(row) => (
+        <>
+          <DetailSection title="Client">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+              <Thumb src={row.image} label={row.client} size={54} />
+              <div>
+                <div style={{ fontWeight: 650, fontSize: 14, color: 'var(--dash-ink)' }}>{row.client}</div>
+                <div style={{ fontSize: 11.5, color: 'var(--dash-muted)' }}>{[row.designation, row.company].filter(Boolean).join(' · ') || '—'}</div>
+                <div style={{ marginTop: 4 }}><Rating value={row.rating} /></div>
               </div>
             </div>
-          ),
-        },
-        {
-          key: 'review',
-          label: 'Review',
-          render: (row) => (
-            <span style={{ display: 'block', maxWidth: 380, color: theme.colors.muted }}>
-              {row.review.length > 110 ? `${row.review.slice(0, 110)}…` : row.review}
-            </span>
-          ),
-        },
-        { key: 'rating', label: 'Rating', render: (row) => `${row.rating} / 5` },
-        { key: 'order', label: 'Order', render: (row) => row.order ?? 0 },
-        { key: 'status', label: 'Status', render: (row) => <StatusBadge value={row.status} /> },
-      ]}
-      fields={fields}
-      defaults={{ rating: 5, status: 'published', order: 0 }}
-      filters={[{ name: 'status', label: 'All statuses', options: STATUS_OPTIONS }]}
-      searchPlaceholder="Search testimonials…"
-      emptyTitle="No testimonials yet"
+            <blockquote style={{ borderLeft: '2px solid var(--dash-accent)', paddingLeft: 12, fontSize: 13, color: 'var(--dash-ink)', lineHeight: 1.7 }}>
+              {row.review}
+            </blockquote>
+          </DetailSection>
+          <DetailSection title="Placement">
+            <DetailList>
+              <DetailRow label="Status"><StatusBadge value={row.status} /></DetailRow>
+              <DetailRow label="Order">{row.order}</DetailRow>
+              <DetailRow label="Created">{formatDate(row.createdAt)}</DetailRow>
+            </DetailList>
+          </DetailSection>
+        </>
+      )}
     />
   );
 }
 
 export function FaqsModule() {
   const fields = [
-    { name: 'question', label: 'Question', required: true, full: true },
-    { name: 'answer', label: 'Answer', type: 'textarea', tall: true, full: true, required: true },
+    { name: 'question', label: 'Question', required: true, full: true, section: 'FAQ' },
+    { name: 'answer', label: 'Answer', type: 'textarea', required: true, full: true, tall: true },
     { name: 'category', label: 'Category', placeholder: 'Orders & delivery' },
-    { name: 'order', label: 'Display order', type: 'number', min: 0 },
-    {
-      name: 'status',
-      label: 'Status',
-      type: 'select',
-      options: STATUS_OPTIONS,
-    },
+    { name: 'order', label: 'Sort order', type: 'number', min: 0 },
+    { name: 'status', label: 'Status', type: 'select', required: true, options: STATUS_OPTIONS, section: 'Publishing' },
+  ];
+
+  const columns = [
+    { key: 'question', label: 'Question', width: 380, render: (row) => <span style={{ fontWeight: 600, color: 'var(--dash-ink)' }}>{row.question}</span> },
+    { key: 'answer', label: 'Answer', render: (row) => <span style={{ display: 'block', maxWidth: 380, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--dash-muted)' }}>{row.answer}</span> },
+    { key: 'category', label: 'Category', render: (row) => row.category || 'General' },
+    { key: 'order', label: 'Order' },
+    { key: 'status', label: 'Status', render: (row) => <StatusBadge value={row.status} /> },
   ];
 
   return (
-    <GenericModule
-      eyebrow="Content"
+    <Workspace
+      eyebrow="Marketing"
       title="FAQs"
-      description="Answer common questions on the FAQ page, product pages and footer help links."
+      description="Answer the questions that block a purchase. FAQs appear on the help page and in product guidance."
       endpoint="/api/faqs"
-      columns={[
-        {
-          key: 'question',
-          label: 'Question',
-          render: (row) => <span className="strong">{row.question}</span>,
-        },
-        { key: 'category', label: 'Category', render: (row) => row.category || '—' },
-        {
-          key: 'answer',
-          label: 'Answer',
-          render: (row) => (
-            <span style={{ display: 'block', maxWidth: 420, color: theme.colors.muted }}>
-              {row.answer.length > 120 ? `${row.answer.slice(0, 120)}…` : row.answer}
-            </span>
-          ),
-        },
-        { key: 'order', label: 'Order', render: (row) => row.order ?? 0 },
-        { key: 'status', label: 'Status', render: (row) => <StatusBadge value={row.status} /> },
-      ]}
+      itemLabel="FAQ"
+      itemLabelPlural="FAQs"
+      columns={columns}
       fields={fields}
       defaults={{ status: 'published', order: 0 }}
       filters={[{ name: 'status', label: 'All statuses', options: STATUS_OPTIONS }]}
-      searchPlaceholder="Search FAQs…"
+      sortOptions={[
+        { value: 'order', label: 'Display order', sort: 'order', order: 'asc' },
+        { value: 'newest', label: 'Newest first', sort: 'createdAt', order: 'desc' },
+      ]}
+      searchPlaceholder="Search questions and answers…"
+      createLabel="Add FAQ"
       emptyTitle="No FAQs yet"
+      emptyText="Add the questions customers ask most often."
+      emptyIcon={<CircleHelp size={19} />}
+      renderDetail={(row) => (
+        <>
+          <DetailSection title="Question">
+            <h3 style={{ fontSize: 15, fontWeight: 650, color: 'var(--dash-ink)', lineHeight: 1.5 }}>{row.question}</h3>
+          </DetailSection>
+          <DetailSection title="Answer">
+            <p style={{ fontSize: 12.5, color: 'var(--dash-muted)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{row.answer}</p>
+          </DetailSection>
+          <DetailSection title="Placement">
+            <DetailList>
+              <DetailRow label="Category">{row.category || 'General'}</DetailRow>
+              <DetailRow label="Status"><StatusBadge value={row.status} /></DetailRow>
+              <DetailRow label="Order">{row.order}</DetailRow>
+              <DetailRow label="Created">{formatDate(row.createdAt)}</DetailRow>
+            </DetailList>
+          </DetailSection>
+        </>
+      )}
     />
   );
 }

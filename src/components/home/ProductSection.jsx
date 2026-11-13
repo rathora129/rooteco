@@ -52,6 +52,7 @@ export default function ProductSection({
   subtitle,
   products,
   viewAllLink = '/products',
+  viewAllLabel = 'View All',
   cream = false,
 }) {
   return (
@@ -65,7 +66,7 @@ export default function ProductSection({
               {subtitle && <p>{subtitle}</p>}
             </div>
             <Link className="view" href={viewAllLink}>
-              View All <ArrowRight size={15} />
+              {viewAllLabel} <ArrowRight size={15} />
             </Link>
           </HeadRow>
         </Reveal>

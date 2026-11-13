@@ -243,6 +243,12 @@ export const faqResource = {
   },
 };
 
+export const PAGE_TEMPLATE_TYPES = {
+  landing: ['hero'],
+  campaign: ['collection', 'process', 'cta'],
+  editorial: ['text', 'image', 'story', 'columns', 'quote'],
+};
+
 export const pageResource = {
   model: 'page',
   schema: pageSchema,
@@ -253,11 +259,31 @@ export const pageResource = {
   defaultOrderBy: { updatedAt: 'desc' },
   include: { sections: { orderBy: { order: 'asc' } } },
   publicWhere: { status: 'published' },
+  async buildWhere({ searchParams }) {
+    const template = searchParams.get('template');
+    if (!template) return null;
+    if (template === 'blank') return { sections: { none: {} } };
+    if (template === 'landing') return { sections: { some: { type: { in: PAGE_TEMPLATE_TYPES.landing } } } };
+    if (template === 'campaign') {
+      return {
+        AND: [
+          { sections: { none: { type: { in: PAGE_TEMPLATE_TYPES.landing } } } },
+          { sections: { some: { type: { in: PAGE_TEMPLATE_TYPES.campaign } } } },
+        ],
+      };
+    }
+    return {
+      AND: [
+        { sections: { none: { type: { in: [...PAGE_TEMPLATE_TYPES.landing, ...PAGE_TEMPLATE_TYPES.campaign] } } } },
+        { sections: { some: { type: { in: PAGE_TEMPLATE_TYPES.editorial } } } },
+      ],
+    };
+  },
   async prepareInput(data, { mode, id }) {
     const sections = data.sections;
     const clean = withoutRelationKeys(data, ['sections']);
-    if (!clean.slug) clean.slug = await uniqueSlug('page', clean.title, id);
-    else clean.slug = slugify(clean.slug);
+    if (clean.slug) clean.slug = slugify(clean.slug);
+    else if (mode === 'create') clean.slug = await uniqueSlug('page', clean.title);
     if (mode === 'create' && clean.status === undefined) clean.status = 'published';
     if (Array.isArray(sections)) {
       const mapped = sections.map((section, index) => ({

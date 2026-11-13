@@ -7,6 +7,9 @@ import { ArrowRight, CalendarDays, User } from 'lucide-react';
 import PageHero from '@/components/common/PageHero';
 import { Container, Section } from '@/components/common/ui';
 import theme from '@/styles/theme';
+import CmsSections from '@/components/pages/CmsSections';
+import { isSectionVisible } from '@/lib/cms';
+import { layoutDefaults, sectionLayout, sectionLayoutKey } from '@/lib/pages/layouts';
 
 const Grid = styled.div`
   display: grid;
@@ -103,56 +106,87 @@ function formatDate(value) {
   return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function BlogIndex({ blogs = [] }) {
+function BlogHero({ content }) {
   return (
-    <>
-      <PageHero
-        eyebrow="Journal"
-        title="Gifting notes & guides"
-        subtitle="Practical guides on corporate gifting, branding techniques, bulk planning and making your team feel valued."
-        crumbs={[{ label: 'Journal' }]}
-      />
-      <Section>
-        <Container>
-          {blogs.length === 0 ? (
-            <p style={{ color: theme.colors.muted, textAlign: 'center' }}>
-              New articles are on the way. In the meantime, explore our{' '}
-              <Link href="/products" style={{ color: theme.colors.forest, fontWeight: 600 }}>
-                corporate gift catalogue
-              </Link>.
-            </p>
-          ) : (
-            <Grid>
-              {blogs.map((blog) => (
-                <Card key={blog.id} href={`/blog/${blog.slug}`}>
-                  <div className="media">
-                    {blog.image && (
-                      <Image
-                        src={blog.image}
-                        alt={blog.title}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 980px) 50vw, 33vw"
-                      />
-                    )}
-                  </div>
-                  <div className="body">
-                    {blog.category && <span className="cat">{blog.category}</span>}
-                    <h2>{blog.title}</h2>
-                    {blog.excerpt && <p>{blog.excerpt}</p>}
-                    <div className="meta">
-                      {blog.author && (
-                        <span><User size={13} /> {blog.author}</span>
-                      )}
-                      <span><CalendarDays size={13} /> {formatDate(blog.publishedAt || blog.createdAt)}</span>
-                    </div>
-                    <span className="read">Read the guide <ArrowRight size={14} /></span>
-                  </div>
-                </Card>
-              ))}
-            </Grid>
-          )}
-        </Container>
-      </Section>
-    </>
+    <PageHero
+      eyebrow={content.eyebrow || 'Journal'}
+      title={content.heading || 'Gifting notes & guides'}
+      subtitle={
+        content.body ||
+        'Practical guides on corporate gifting, branding techniques, bulk planning and making your team feel valued.'
+      }
+      crumbs={[{ label: 'Journal' }]}
+    />
   );
+}
+
+function BlogGrid({ blogs }) {
+  return (
+    <Section>
+      <Container>
+        {blogs.length === 0 ? (
+          <p style={{ color: theme.colors.muted, textAlign: 'center' }}>
+            New articles are on the way. In the meantime, explore our{' '}
+            <Link href="/products" style={{ color: theme.colors.forest, fontWeight: 600 }}>
+              corporate gift catalogue
+            </Link>.
+          </p>
+        ) : (
+          <Grid>
+            {blogs.map((blog) => (
+              <Card key={blog.id} href={`/blog/${blog.slug}`}>
+                <div className="media">
+                  {blog.image && (
+                    <Image
+                      src={blog.image}
+                      alt={blog.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 980px) 50vw, 33vw"
+                    />
+                  )}
+                </div>
+                <div className="body">
+                  {blog.category && <span className="cat">{blog.category}</span>}
+                  <h2>{blog.title}</h2>
+                  {blog.excerpt && <p>{blog.excerpt}</p>}
+                  <div className="meta">
+                    {blog.author && (
+                      <span><User size={13} /> {blog.author}</span>
+                    )}
+                    <span><CalendarDays size={13} /> {formatDate(blog.publishedAt || blog.createdAt)}</span>
+                  </div>
+                  <span className="read">Read the guide <ArrowRight size={14} /></span>
+                </div>
+              </Card>
+            ))}
+          </Grid>
+        )}
+      </Container>
+    </Section>
+  );
+}
+
+const RENDERERS = {
+  'blog-hero': BlogHero,
+  'blog-grid': BlogGrid,
+};
+
+export default function BlogIndex({ blogs = [], sections }) {
+  const list = (Array.isArray(sections) && sections.length ? sections : layoutDefaults('blog')).filter(
+    isSectionVisible,
+  );
+  return list.map((section) => {
+    const layout = sectionLayout(section);
+    const content = {
+      eyebrow: section.data?.subheading || '',
+      heading: section.heading || '',
+      body: section.body || '',
+      image: section.image || '',
+      ...(section.data || {}),
+    };
+    const key = section.id || sectionLayoutKey(section) || layout;
+    const Block = RENDERERS[layout];
+    if (!Block) return <CmsSections key={key} sections={[section]} />;
+    return <Block key={key} content={content} blogs={blogs} />;
+  });
 }

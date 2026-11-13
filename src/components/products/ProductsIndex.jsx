@@ -19,13 +19,16 @@ const Note = styled.div`
   }
 `;
 
-export default function ProductsIndex({ products = [], categories = [] }) {
+export default function ProductsIndex({ products = [], categories = [], hero = {} }) {
   return (
     <>
       <PageHero
-        eyebrow="The Full Catalogue"
-        title="Every RootEco gift, in one place"
-        subtitle="Browse all products, filter by category, price or occasion, and save your favourites. Every item supports custom branding and bulk pricing."
+        eyebrow={hero.eyebrow || 'The Full Catalogue'}
+        title={hero.title || 'Every RootEco gift, in one place'}
+        subtitle={
+          hero.subtitle ||
+          'Browse all products, filter by category, price or occasion, and save your favourites. Every item supports custom branding and bulk pricing.'
+        }
         crumbs={[{ label: 'Products' }]}
       >
         <Note>

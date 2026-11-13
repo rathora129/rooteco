@@ -1,4 +1,4 @@
-import { PagesModule } from '@/components/dashboard/modules/ContentModules';
+import PagesModule from '@/components/dashboard/modules/PagesModule';
 
 export const metadata = { title: 'Website pages' };
 

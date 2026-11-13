@@ -1,6 +1,5 @@
 import WallOfLovePage from '@/components/pages/WallOfLovePage';
-import CmsForSlug from '@/components/pages/CmsForSlug';
-import { getTestimonials } from '@/lib/catalog';
+import { getPage, getTestimonials } from '@/lib/catalog';
 
 export const metadata = {
   title: 'Wall of Love',
@@ -9,11 +8,6 @@ export const metadata = {
 };
 
 export default async function WallOfLoveRoute() {
-  const testimonials = await getTestimonials();
-  return (
-    <>
-      <WallOfLovePage testimonials={testimonials} />
-      <CmsForSlug slug="wall-of-love" />
-    </>
-  );
+  const [testimonials, page] = await Promise.all([getTestimonials(), getPage('wall-of-love')]);
+  return <WallOfLovePage testimonials={testimonials} sections={page?.sections} />;
 }

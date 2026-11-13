@@ -85,16 +85,16 @@ const DemoNote = styled.p`
   }
 `;
 
-export default function WallOfLove({ testimonials = [] }) {
+export default function WallOfLove({ testimonials = [], content = {} }) {
   if (!testimonials.length) return null;
   return (
     <Section>
       <Container>
         <Reveal>
           <SectionHead>
-            <Eyebrow>Wall of Love</Eyebrow>
-            <h2>What our clients say</h2>
-            <p>Stories from teams who trusted RootEco with their gifting moments.</p>
+            <Eyebrow>{content.eyebrow || 'Wall of Love'}</Eyebrow>
+            <h2>{content.heading || 'What our clients say'}</h2>
+            <p>{content.body || 'Stories from teams who trusted RootEco with their gifting moments.'}</p>
           </SectionHead>
         </Reveal>
       </Container>

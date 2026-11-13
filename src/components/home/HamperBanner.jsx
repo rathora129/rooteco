@@ -129,7 +129,7 @@ const Visual = styled.div`
   }
 `;
 
-export default function HamperBanner() {
+export default function HamperBanner({ content = {} }) {
   return (
     <Section>
       <Container>
@@ -137,7 +137,7 @@ export default function HamperBanner() {
           <Banner>
             <Image
               className="bg"
-              src={unsplash('photo-1549465220-1a8b9238cd48', 1600)}
+              src={content.image || unsplash('photo-1549465220-1a8b9238cd48', 1600)}
               alt=""
               fill
               sizes="100vw"
@@ -146,18 +146,18 @@ export default function HamperBanner() {
             <div className="inner">
               <Copy>
                 <span className="k">
-                  <Sparkles size={14} /> Make it yours
+                  <Sparkles size={14} /> {content.eyebrow || 'Make it yours'}
                 </span>
-                <h2>Build Your Own Hamper</h2>
+                <h2>{content.heading || 'Build Your Own Hamper'}</h2>
                 <p>
-                  Pick a box, choose the products, add your branding — and we curate, pack and
-                  deliver a hamper that feels unmistakably yours.
+                  {content.body ||
+                    'Pick a box, choose the products, add your branding — and we curate, pack and deliver a hamper that feels unmistakably yours.'}
                 </p>
                 <div className="ctas">
-                  <Gold href="/build-your-own-hamper">
-                    <PackagePlus size={17} /> Select Products
+                  <Gold href={content.href || '/build-your-own-hamper'}>
+                    <PackagePlus size={17} /> {content.label || 'Select Products'}
                   </Gold>
-                  <Ghost href="/build-your-own-hamper">
+                  <Ghost href={content.href || '/build-your-own-hamper'}>
                     Customize Your Hamper <ArrowRight size={15} />
                   </Ghost>
                 </div>

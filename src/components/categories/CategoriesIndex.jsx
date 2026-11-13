@@ -125,13 +125,16 @@ const Explore = styled(Link)`
   }
 `;
 
-export default function CategoriesIndex({ categories = [] }) {
+export default function CategoriesIndex({ categories = [], hero = {} }) {
   return (
     <>
       <PageHero
-        eyebrow="The RootEco Catalogue"
-        title="Find the perfect gift for every moment"
-        subtitle="Ten curated categories — from first-day welcome kits to festival hampers and executive gift sets. Every product can be branded, personalized and delivered pan India."
+        eyebrow={hero.eyebrow || 'The RootEco Catalogue'}
+        title={hero.title || 'Find the perfect gift for every moment'}
+        subtitle={
+          hero.subtitle ||
+          'Ten curated categories — from first-day welcome kits to festival hampers and executive gift sets. Every product can be branded, personalized and delivered pan India.'
+        }
         crumbs={[{ label: 'Categories' }]}
       />
 
